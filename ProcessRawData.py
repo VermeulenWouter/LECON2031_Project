@@ -1,0 +1,231 @@
+import os
+import os.path as path
+import re
+from typing import List, Optional
+import pandas as pd
+
+
+#%%
+
+_FILE_PATH = path.dirname(__name__)
+RAWDATA_PATH = path.join(_FILE_PATH, "DataRaw")
+DATA_PATH = path.join(_FILE_PATH, "Data")
+
+# Debug settings
+DEBUG = False
+pd.set_option('display.max_columns', None)
+
+#%%
+def _safe_rename(src: str, dst: str) -> bool:
+    """
+    Safely rename a file: check the ´dest´ filename doesn't already exist.
+    Also catch errors (simply report).
+
+    :param src: the src file name
+    :param dst: the new filename
+    :return: True if rename was success, False if not
+    """
+    # If src and dst are the same path, nothing to do
+    if src == dst:
+        return False
+    if os.path.exists(dst):
+        # Do not overwrite; skip
+        print(f"Skipping rename, destination exists: '{dst}' (source: '{src}')")
+        return False
+    try:
+        os.rename(src, dst)
+        print(f"Renamed: '{src}' -> '{dst}'")
+        return True
+    except OSError as e:
+        print(f"Failed to rename '{src}' -> '{dst}': {e}")
+        return False
+
+def rename_raw_input_files() -> Optional[List[str]]:
+    """Renames input files in the DataRaw folder to a standardized format.
+
+    Behavior:
+    - DataRaw/InstalledCapacity/<year>_InstalledCapacityProductionUnit_...csv
+      -> DataRaw/InstalledCapacity/<year>_PerProductionUnit.csv
+    - DataRaw/ActualGeneration/<year>_<month>_ActualGenerationOutputPerGenerationUnit_...csv
+      -> DataRaw/ActualGeneration/<year>_<month>_ActualGeneration.csv
+
+    The function will not overwrite existing files. If a target name already exists it will skip that file
+    and report it as skipped. Returns a list with the original file paths that were renamed, or None if
+    no files were changed.
+    """
+    # Resolve DataRaw directory relative to this script
+    changed: List[str] = []
+
+    inst_dir = os.path.join(RAWDATA_PATH, "InstalledCapacity")
+    for fname in os.listdir(inst_dir):
+        fpath = os.path.join(inst_dir, fname)
+
+        m = re.match(r"^(?P<year>\d{4})_InstalledCapacityProductionUnit_.*\.csv$", fname, flags=re.IGNORECASE)
+        if not m:
+            continue
+        year = m.group('year')
+        new_name = f"{year}_PerProductionUnit.csv"
+        new_path = os.path.join(inst_dir, new_name)
+        if _safe_rename(fpath, new_path):
+            changed.append(fpath)
+
+    # 2) ActualGeneration
+    gen_dir = os.path.join(RAWDATA_PATH, "ActualGeneration")
+    for fname in os.listdir(gen_dir):
+        fpath = os.path.join(gen_dir, fname)
+
+        m = re.match(r"^(?P<year>\d{4})_(?P<month>\d{2})_ActualGenerationOutputPerGenerationUnit_.*\.csv$", fname)
+        if not m:
+            continue
+        year = m.group('year')
+        month = m.group('month')
+        new_name = f"{year}_{month}_ActualGeneration.csv"
+        new_path = os.path.join(gen_dir, new_name)
+        if _safe_rename(fpath, new_path):
+            changed.append(fpath)
+
+    if not changed:
+        return None
+    return changed
+
+
+rename_raw_input_files()
+#%%
+
+def extract_installed_capacity_data(input_directory, output_directory, control_area: str = "10YBE----------2"):
+    """Extracts installed capacity data from input files and saves them to the output directory.
+
+    Outputs to a csv file with each production unit's installed capacity per year between 2015-2025 (capacity = 0 if not present in a certain year).
+    """
+    pass
+
+    # Save to "<output_directory>/<AreaMapCode>_InstalledCapacityPerProductionUnit.csv"
+
+
+def extract_generation_data(output_directory: str = DATA_PATH, control_area: str = "10YBE----------2"):
+    """Extracts generation data from input files and saves them to the output directory.
+    Two files are output:
+    - "<output_directory>/<AreaMapCode>_GenerationPerProductionUnit.csv"
+    - "<output_directory>/<AreaMapCode>_GenerationUnitSummary.csv"
+
+    This function overwrites existing files in the output directory!
+    """
+    os.makedirs(output_directory, exist_ok=True)
+
+    # Gather input files
+    input_dir = path.join(RAWDATA_PATH, "ActualGeneration")
+    pattern = re.compile(r"^(\d{4})_(\d{2})_ActualGeneration\.csv$")
+    actual_generation_files = {}  # {year_1: [file_month_1, file_month_2, ...], ...}
+
+    n_files = 0
+    for fname in os.listdir(input_dir):
+        full_path = os.path.join(input_dir, fname)
+
+        match = pattern.match(fname)
+        if not match:
+            continue
+
+        year, month = match.groups()
+        if year not in actual_generation_files:
+            actual_generation_files[year] = []
+        actual_generation_files[year].append(full_path)
+        n_files += 1
+
+    # Concatenate all files (work per month then per year to avoid too large lists (one month ~500MB))
+    print(f"Processing files:")
+    dfs_per_year = []
+    i = 1
+    for year in actual_generation_files.keys():
+        dfs_per_month = []
+        for f in actual_generation_files[year]:
+            print(f"\t[{i:3}/{n_files}] {f}")
+            df_month = pd.read_csv(f, sep="\t")
+
+            # Keep only one control area
+            df_month = df_month[df_month["AreaCode"] == control_area]
+            if df_month.empty:
+                print(f"No rows found for AreaCode={control_area} in file {f}. Skipping...")
+                continue
+
+            # Check resolution code
+            if not (df_month["ResolutionCode"] == "PT60M").all():
+                raise ValueError(f"File {f} contains non-PT60M rows for control area {control_area}.")
+
+            # Already delete columns not used later
+            unused_cols = ["ActualConsumption(MW)", "UpdateTime(UTC)", "ResolutionCode"]
+            df_month = df_month.drop(columns=unused_cols)
+
+            dfs_per_month.append(df_month)
+            i += 1
+
+        df_year = pd.concat(dfs_per_month)
+        del dfs_per_month[:]
+
+        if df_year.empty:
+            print(f"No rows found for AreaCode={control_area} in year={year}. Check if 'control_area' already existed at that time...")
+            return
+
+        dfs_per_year.append(df_year)
+
+    df = pd.concat(dfs_per_year)
+    del dfs_per_year[:]
+
+    # Parse columns
+    df["DateTime (UTC)"] = pd.to_datetime(df["DateTime (UTC)"], errors='coerce')
+
+    # Check metadata is constant for each generation unit
+    print("\nChecking metadata consistency per GenerationUnitCode...")
+    metadata_cols = [
+        "GenerationUnitName",
+        "GenerationUnitType",
+        "GenerationUnitInstalledCapacity(MW)",
+        "AreaCode",
+        "AreaDisplayName",
+        "AreaTypeCode",
+        "MapCode"
+    ]
+
+    for unit, group in df.groupby("GenerationUnitCode"):
+        inconsistent = False
+        for col in metadata_cols:
+            unique_vals = group[col].dropna().unique()
+            if len(unique_vals) > 1:
+                if not inconsistent:
+                    print(f"Inconsistency found for GenerationUnitCode: {unit}")
+                    inconsistent = True
+                print(f"\t* Column '{col}' has multiple values: {unique_vals}")
+
+    # Extract metadata per generation unit and save to separate file
+    generation_unit_summary = (
+        df.groupby("GenerationUnitCode")[metadata_cols]
+        .first()
+        .reset_index()
+    )
+
+    mapcode = generation_unit_summary["MapCode"].iloc[0]
+    generation_unit_summary.to_csv(path.join(output_directory, f"{mapcode}_ProductionUnits.csv"), index=False, sep=";")
+
+    # Restructure DataFrame (losing 'metadata') and output to separate file
+    print("\nRestructuring generation data and saving to file...")
+    df = df.drop(columns=metadata_cols)
+
+    df = df.pivot(
+        index="DateTime (UTC)",
+        columns="GenerationUnitCode",
+        values="ActualGenerationOutput(MW)"
+    ).sort_index()
+
+    # Make sure output is continuously each hour (values for missing hours become NaN)
+    full_index = pd.date_range(
+        start=df.index.min(),
+        end=df.index.max(),
+        freq="h"
+    )
+
+    df = df.reindex(full_index)
+    df.index.name = "DateTime (UTC)"
+
+    df.to_csv(path.join(output_directory, f"{mapcode}_GenerationPerProductionUnit.csv"), sep=";")
+
+
+extract_generation_data()

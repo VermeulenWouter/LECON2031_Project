@@ -1,54 +1,56 @@
-GenerationUnitCode;GenerationUnitName;GenerationUnitType;GenerationUnitInstalledCapacity(MW);AreaCode;AreaDisplayName;AreaTypeCode;MapCode
-22W20161115----Z;Nobelwind Offshore Windpark;Wind Offshore;165.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W20180615----H;Rentel Offshore WP;Wind Offshore;307.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W201806282---2;EDF Luminus Seraing GT1;Fossil Gas;150.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W201806283---Y;EDF Luminus Seraing GT2;Fossil Gas;150.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W201806284---T;SERAING TV;Fossil Gas;170.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W20181005GU--R;VILVOORDE GT;Fossil Gas;264.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W201902132---O;Norther Offshore WP;Wind Offshore;370.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W201909151---M;Northwester 2;Wind Offshore;219.1;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W20200608B---3;Mermaid Offshore WP;Wind Offshore;237.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W20200608D---U;Seastar Offshore WP;Wind Offshore;252.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W20220118GU--F;VILVOORDE ST;Fossil Gas;121.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W20220519----1;Flemalle CCGT;Fossil Gas;890.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W202312041---X;Vilvoorde BESS 1;Energy storage;100.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22W202312043---N;Vilvoorde BESS 2;Energy storage;100.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WAMERCO000008L;Amercoeur 1 R GT;Fossil Gas;289.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WAMERCO000009J;Amercoeur 1 R ST;Fossil Gas;162.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WBELWIN1500271;Belwind Phase 1;Wind Offshore;171.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WCOOX1X0000481;COO 1 T;Hydro Pumped Storage;158.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WCOOX2X0000521;COO 2 T;Hydro Pumped Storage;158.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WCOOX3X000055N;COO 3 T;Hydro Pumped Storage;158.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WCOOX4X0000588;COO 4 T;Hydro Pumped Storage;230.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WCOOX5X000061A;COO 5 T;Hydro Pumped Storage;230.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WCOOX6X000064W;COO 6 T;Hydro Pumped Storage;230.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WDOELX1150076X;DOEL 1;Nuclear;433.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WDOELX2150077N;DOEL 2;Nuclear;433.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WDOELX3150078D;DOEL 3;Nuclear;1006.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WDOELX41500793;DOEL 4;Nuclear;1038.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WDROGEN0000839;DROGENBOS GT1;Fossil Gas;100.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WDROGEN0000847;DROGENBOS GT2;Fossil Gas;100.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WDROGEN0000855;DROGENBOS ST;Fossil Gas;165.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WESCH-S1500967;ESCH-SUR-ALZETTE STEG;Fossil Gas;376.4;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WHERDER000125E;HERDERSBRUG GT1;Fossil Gas;150.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WHERDER000126C;HERDERSBRUG GT2;Fossil Gas;150.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WHERDER000127A;HERDERSBRUG ST;Fossil Gas;165.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WINESCO150149P;INESCO WKK;Fossil Gas;133.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WLANGER1501694;LANGERLO 1;Fossil Hard coal;235.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WLANGER150171H;LANGERLO 2;Fossil Hard coal;235.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WMARCIN150179H;Marcinelle Energie (Carsid);Fossil Gas;405.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WNORTHW150187B;Northwind;Wind Offshore;216.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WPLATEX150208N;PLATE-TAILLE T;Hydro Pumped Storage;144.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WRINGVA150209C;RINGVAART STEG;Fossil Gas;357.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WRODENH150213L;RODENHUIZE 4;Biomass;268.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WSAINT-150221B;SAINT-GHISLAIN STEG;Fossil Gas;350.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WSCHELD1502261;Scheldelaan Exxonmobil;Fossil Gas;140.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WT-POWE150244W;T-power Beringen;Fossil Gas;419.8;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WTHORNT150237E;Thorntonbank - C-Power - Area NE;Wind Offshore;147.6;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WTHORNT150238C;Thorntonbank - C-Power - Area SW;Wind Offshore;177.6;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WTIHANG150239G;TIHANGE 1N;Nuclear;481.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WTIHANG150240V;TIHANGE 1S;Nuclear;481.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WTIHANG150241T;TIHANGE 2;Nuclear;1008.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WTIHANG150242R;TIHANGE 3;Nuclear;1045.8;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WZANDVL150255D;Zandvliet Power;Fossil Gas;384.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
-22WZELZAT1502618;Zelzate 2 Knippegroen;Fossil Gas;315.0;10YBE----------2;Belgium (BE);BZN/CTA;BE
+GenerationUnitCode;GenerationUnitName;GenerationUnitType;GenerationUnitInstalledCapacity(MW);AreaCode;AreaDisplayName;AreaTypeCode;MapCode;ResolutionCode
+22W20161115----Z;Nobelwind Offshore Windpark;Wind Offshore;165.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W20180615----H;Rentel Offshore WP;Wind Offshore;308.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W201806282---2;EDF Luminus Seraing GT1;Fossil Gas;150.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W201806283---Y;EDF Luminus Seraing GT2;Fossil Gas;150.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W201806284---T;SERAING TV;Fossil Gas;170.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W20181005GU--R;VILVOORDE GT;Fossil Gas;264.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W20181015PU--J;VILVOORDE GT;Fossil Gas;255.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W201902132---O;Norther Offshore WP;Wind Offshore;370.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W201902151---T;Norther Offshore WP;Wind Offshore;369.6;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W201909151---M;Northwester 2;Wind Offshore;219.1;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W20200608B---3;Mermaid Offshore WP;Wind Offshore;237.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W20200608D---U;Seastar Offshore WP;Wind Offshore;252.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W20220118GU--F;VILVOORDE ST;Fossil Gas;121.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W20220519----1;Flemalle CCGT;Fossil Gas;890.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W202312041---X;Vilvoorde BESS 1;Energy storage;100.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22W202312043---N;Vilvoorde BESS 2;Energy storage;100.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WAMERCO000008L;Amercoeur 1 R GT;Fossil Gas;289.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WAMERCO000009J;Amercoeur 1 R ST;Fossil Gas;162.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WBELWIN1500271;Belwind Phase 1;Wind Offshore;171.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WCOOX1X0000481;COO 1 T;Hydro Pumped Storage;158.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WCOOX2X0000521;COO 2 T;Hydro Pumped Storage;158.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WCOOX3X000055N;COO 3 T;Hydro Pumped Storage;158.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WCOOX4X0000588;COO 4 T;Hydro Pumped Storage;230.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WCOOX5X000061A;COO 5 T;Hydro Pumped Storage;230.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WCOOX6X000064W;COO 6 T;Hydro Pumped Storage;230.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WDOELX1150076X;DOEL 1;Nuclear;433.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WDOELX2150077N;DOEL 2;Nuclear;433.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WDOELX3150078D;DOEL 3;Nuclear;1006.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WDOELX41500793;DOEL 4;Nuclear;1038.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WDROGEN0000839;DROGENBOS GT1;Fossil Gas;100.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WDROGEN0000847;DROGENBOS GT2;Fossil Gas;100.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WDROGEN0000855;DROGENBOS ST;Fossil Gas;165.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WESCH-S1500967;ESCH-SUR-ALZETTE STEG;Fossil Gas;376.4;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WHERDER000125E;HERDERSBRUG GT1;Fossil Gas;150.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WHERDER000126C;HERDERSBRUG GT2;Fossil Gas;150.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WHERDER000127A;HERDERSBRUG ST;Fossil Gas;165.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WINESCO150149P;INESCO WKK;Fossil Gas;133.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WLANGER1501694;LANGERLO 1;Fossil Hard coal;235.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WLANGER150171H;LANGERLO 2;Fossil Hard coal;235.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WMARCIN150179H;Marcinelle Energie (Carsid);Fossil Gas;405.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WNORTHW150187B;Northwind;Wind Offshore;216.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WPLATEX150208N;PLATE-TAILLE T;Hydro Pumped Storage;144.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WRINGVA150209C;RINGVAART STEG;Fossil Gas;357.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WRODENH150213L;RODENHUIZE 4;Biomass;268.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WSAINT-150221B;SAINT-GHISLAIN STEG;Fossil Gas;350.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WSCHELD1502261;Scheldelaan Exxonmobil;Fossil Gas;140.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WT-POWE150244W;T-power Beringen;Fossil Gas;419.8;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WTHORNT150237E;Thorntonbank - C-Power - Area NE;Wind Offshore;147.6;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WTHORNT150238C;Thorntonbank - C-Power - Area SW;Wind Offshore;177.6;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WTIHANG150239G;TIHANGE 1N;Nuclear;481.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WTIHANG150240V;TIHANGE 1S;Nuclear;481.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WTIHANG150241T;TIHANGE 2;Nuclear;1008.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WTIHANG150242R;TIHANGE 3;Nuclear;1045.8;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WZANDVL150255D;Zandvliet Power;Fossil Gas;384.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M
+22WZELZAT1502618;Zelzate 2 Knippegroen;Fossil Gas;315.0;10YBE----------2;Belgium (BE);BZN/CTA;BE;PT60M

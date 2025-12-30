@@ -1,14 +1,22 @@
+"""
+Processes raw data files for generation and installed capacity.
+
+@author: Wouter Vermeulen
+@date: 2025-12-10
+"""
+
 import os
 import os.path as path
+import pandas as pd
 import re
 from typing import List, Optional
-import pandas as pd
 
 
 #%%
 
 _FILE_PATH = path.dirname(__name__)
-RAWDATA_PATH = path.join(_FILE_PATH, "DataRaw")
+RAWDATA_PATH = "D:/Temp projet econometrics"
+# RAWDATA_PATH = path.join(_FILE_PATH, "DataRaw")
 DATA_PATH = path.join(_FILE_PATH, "Data")
 
 # Debug settings
@@ -56,18 +64,18 @@ def rename_raw_input_files() -> Optional[List[str]]:
     # Resolve DataRaw directory relative to this script
     changed: List[str] = []
 
-    inst_dir = os.path.join(RAWDATA_PATH, "InstalledCapacity")
-    for fname in os.listdir(inst_dir):
-        fpath = os.path.join(inst_dir, fname)
-
-        m = re.match(r"^(?P<year>\d{4})_InstalledCapacityProductionUnit_.*\.csv$", fname, flags=re.IGNORECASE)
-        if not m:
-            continue
-        year = m.group('year')
-        new_name = f"{year}_PerProductionUnit.csv"
-        new_path = os.path.join(inst_dir, new_name)
-        if _safe_rename(fpath, new_path):
-            changed.append(fpath)
+    # inst_dir = os.path.join(RAWDATA_PATH, "InstalledCapacity")
+    # for fname in os.listdir(inst_dir):
+    #     fpath = os.path.join(inst_dir, fname)
+    #
+    #     m = re.match(r"^(?P<year>\d{4})_InstalledCapacityProductionUnit_.*\.csv$", fname, flags=re.IGNORECASE)
+    #     if not m:
+    #         continue
+    #     year = m.group('year')
+    #     new_name = f"{year}_PerProductionUnit.csv"
+    #     new_path = os.path.join(inst_dir, new_name)
+    #     if _safe_rename(fpath, new_path):
+    #         changed.append(fpath)
 
     # 2) ActualGeneration
     gen_dir = os.path.join(RAWDATA_PATH, "ActualGeneration")
@@ -92,25 +100,24 @@ def rename_raw_input_files() -> Optional[List[str]]:
 rename_raw_input_files()
 #%%
 
-def extract_installed_capacity_data(input_directory, output_directory, control_area: str = "10YBE----------2"):
-    """Extracts installed capacity data from input files and saves them to the output directory.
-
-    Outputs to a csv file with each production unit's installed capacity per year between 2015-2025 (capacity = 0 if not present in a certain year).
-    """
-    pass
-
-    # Save to "<output_directory>/<AreaMapCode>_InstalledCapacityPerProductionUnit.csv"
-
-
-def extract_generation_data(output_directory: str = DATA_PATH, control_area: str = "10YBE----------2"):
+def extract_generation_data(output_directory: str = DATA_PATH, control_area: str | None = None, generation_type: str | None = None):
     """Extracts generation data from input files and saves them to the output directory.
+
+    Either 'control_area' or 'generation_type' must be provided (or both).
     Two files are output:
-    - "<output_directory>/<AreaMapCode>_GenerationPerProductionUnit.csv"
-    - "<output_directory>/<AreaMapCode>_GenerationUnitSummary.csv"
+    - "<output_directory>/<AreaMapCode>_<GenerationType>_GenerationPerProductionUnit.csv"
+    - "<output_directory>/<AreaMapCode>_<GenerationType>_GenerationUnitSummary.csv"
+    If either 'control_area' or 'generation_type' is None, it is omitted from the filename. If both are none,
+    the prefix "GenerationData" is used.
+
+    <GenerationType> = `generation_type` except for: {"Wind Offwhore": "WO"}
 
     This function overwrites existing files in the output directory!
     """
     os.makedirs(output_directory, exist_ok=True)
+
+    generation_types = {"Wind Offshore": "WO"}
+    generationtype = generation_types.get(generation_type, generation_type)
 
     # Gather input files
     input_dir = path.join(RAWDATA_PATH, "ActualGeneration")
@@ -141,18 +148,32 @@ def extract_generation_data(output_directory: str = DATA_PATH, control_area: str
             print(f"\t[{i:3}/{n_files}] {f}")
             df_month = pd.read_csv(f, sep="\t")
 
-            # Keep only one control area
-            df_month = df_month[df_month["AreaCode"] == control_area]
-            if df_month.empty:
-                print(f"No rows found for AreaCode={control_area} in file {f}. Skipping...")
-                continue
+            # Keep only one control area if specified
+            if control_area is not None:
+                df_month = df_month[df_month["AreaCode"] == control_area]
+                if df_month.empty:
+                    print(f"No rows found for AreaCode={control_area} in file {f}. Skipping...")
+                    continue
 
-            # Check resolution code
-            if not (df_month["ResolutionCode"] == "PT60M").all():
-                raise ValueError(f"File {f} contains non-PT60M rows for control area {control_area}.")
+                # Check resolution code
+                # if not (df_month["ResolutionCode"] == "PT60M").all():
+                #    raise ValueError(f"File {f} contains non-PT60M rows for control area {control_area}.")
+
+            # TODO check the netherlands because all are "other"
+            if generation_type is not None:
+                df_month = df_month[df_month["GenerationUnitType"] == generation_type]
+                if df_month.empty:
+                    print(f"No rows found for GenerationUnitType={generation_type} in file {f}. Skipping...")
+                    continue
+
+                # Check resolution code
+                # TODO check why some files have non-PT60M rows
+                # if not (df_month["ResolutionCode"] == "PT60M").all():
+                #    raise ValueError(f"File {f} contains non-PT60M rows for GenerationUnitType {generation_type}.")
+
 
             # Already delete columns not used later
-            unused_cols = ["ActualConsumption(MW)", "UpdateTime(UTC)", "ResolutionCode"]
+            unused_cols = ["ActualConsumption(MW)", "UpdateTime(UTC)"]
             df_month = df_month.drop(columns=unused_cols)
 
             dfs_per_month.append(df_month)
@@ -182,7 +203,8 @@ def extract_generation_data(output_directory: str = DATA_PATH, control_area: str
         "AreaCode",
         "AreaDisplayName",
         "AreaTypeCode",
-        "MapCode"
+        "MapCode",
+        "ResolutionCode"
     ]
 
     for unit, group in df.groupby("GenerationUnitCode"):
@@ -202,8 +224,12 @@ def extract_generation_data(output_directory: str = DATA_PATH, control_area: str
         .reset_index()
     )
 
-    mapcode = generation_unit_summary["MapCode"].iloc[0]
-    generation_unit_summary.to_csv(path.join(output_directory, f"{mapcode}_ProductionUnits.csv"), index=False, sep=";")
+    if control_area is not None:
+        mapcode = generation_unit_summary["MapCode"].iloc[0]
+        filename_prefix = f"{mapcode}_{generationtype}" if generationtype is not None else f"{mapcode}"
+    else:
+        filename_prefix = f"{generationtype}" if generationtype is not None else "GenerationData"
+    generation_unit_summary.to_csv(path.join(output_directory, f"{filename_prefix}_ProductionUnits.csv"), index=False, sep=";")
 
     # Restructure DataFrame (losing 'metadata') and output to separate file
     print("\nRestructuring generation data and saving to file...")
@@ -225,7 +251,10 @@ def extract_generation_data(output_directory: str = DATA_PATH, control_area: str
     df = df.reindex(full_index)
     df.index.name = "DateTime (UTC)"
 
-    df.to_csv(path.join(output_directory, f"{mapcode}_GenerationPerProductionUnit.csv"), sep=";")
+    df.to_csv(path.join(output_directory, f"{filename_prefix}_GenerationPerProductionUnit.csv"), sep=";")
 
 
-extract_generation_data()
+extract_generation_data(control_area="10YBE----------2")
+# extract_generation_data(generation_type="Wind Offshore")
+
+# extract_generation_data(control_area="10YNL----------L")

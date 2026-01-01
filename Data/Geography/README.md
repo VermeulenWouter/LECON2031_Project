@@ -1,5 +1,7 @@
 # Folder contents: Geographical Data
 
+This folder contains geographical data files used in the project, including weather station coordinates and shapefiles for offshore wind zones and Exclusive Economic Zone (EEZ) boundaries.
+
 | File Name                       | Description                                                                 |
 |---------------------------------|-----------------------------------------------------------------------------|
 | `WeatherStationCoordinates.csv` | Coordinates of weather stations used for wind data collection.              |

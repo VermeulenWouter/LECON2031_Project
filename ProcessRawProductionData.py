@@ -54,8 +54,8 @@ def rename_raw_input_files() -> Optional[List[str]]:
     Behavior:
     - DataRaw/InstalledCapacity/<year>_InstalledCapacityProductionUnit_...csv
       -> DataRaw/InstalledCapacity/<year>_PerProductionUnit.csv
-    - DataRaw/ActualGeneration/<year>_<month>_ActualGenerationOutputPerGenerationUnit_...csv
-      -> DataRaw/ActualGeneration/<year>_<month>_ActualGeneration.csv
+    - DataRaw/Electricity/<year>_<month>_ActualGenerationOutputPerGenerationUnit_...csv
+      -> DataRaw/Electricity/<year>_<month>_ActualGeneration.csv
 
     The function will not overwrite existing files. If a target name already exists it will skip that file
     and report it as skipped. Returns a list with the original file paths that were renamed, or None if
@@ -77,8 +77,8 @@ def rename_raw_input_files() -> Optional[List[str]]:
     #     if _safe_rename(fpath, new_path):
     #         changed.append(fpath)
 
-    # 2) ActualGeneration
-    gen_dir = os.path.join(RAWDATA_PATH, "ActualGeneration")
+    # 2) Electricity
+    gen_dir = os.path.join(RAWDATA_PATH, "Electricity")
     for fname in os.listdir(gen_dir):
         fpath = os.path.join(gen_dir, fname)
 
@@ -120,7 +120,7 @@ def extract_generation_data(output_directory: str = DATA_PATH, control_area: str
     generationtype = generation_types.get(generation_type, generation_type)
 
     # Gather input files
-    input_dir = path.join(RAWDATA_PATH, "ActualGeneration")
+    input_dir = path.join(RAWDATA_PATH, "Electricity")
     pattern = re.compile(r"^(\d{4})_(\d{2})_ActualGeneration\.csv$")
     actual_generation_files = {}  # {year_1: [file_month_1, file_month_2, ...], ...}
 

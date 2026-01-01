@@ -1,47 +1,19 @@
+# Folder contents: DataRaw
 
-# Initial raw data
-*Note: The raw data files are quite large. Therefore, we have preprocessed and filtered them to only include the relevant data for our analysis. The processed data files are stored in the `Data/` directory. The raw data is not sent with this project.*
+This folder contains the raw data files used in the project. The pre-processed and filtered data files are stored in the `Data/` directory.
 
-## Source
-The raw data is sourced from the ENTSO-E Transparency Platform: https://transparency.entsoe.eu/
-
-### On actual generation
-* `<year>_<month>_ActualGeneration`: Actual Generation per Generation Unit
-    * Use: get the actual generation per production unit over time to calculate utilization rates (capacity factors) for different production units.
-    * https://transparencyplatform.zendesk.com/hc/en-us/articles/16648326220564-Actual-Generation-per-Generation-Unit-16-1-A
-    * Filter on: `AreaCode="10YBE----------2" and GenerationUnitType="B18"`(Belgium, offshore wind units)
-    * Other columns of interest: `["DateTime (UTC)", "ResolutionCode", "GenerationUnitCode", "GenerationUnitName", "GenerationUnitType", "ActualGenerationOutput", "GenerationUnitInstalledCapacity(MW)"]`
-        * `DateTime (UTC)`: timestamp of the generation data (in UTC)
-        * `ResolutionCode`: time resolution of the data (should be `"PT60M"` for hourly data !)
-        * `GenerationUnitCode`: unique identifier for each production unit
-        * `GenerationUnitName`: name of the production unit
-        * `GenerationUnitType`: type of production unit (should be `"Offshore Wind"` for offshore wind units)
-        * `ActualGenerationOutput`: actual generation output in MW
-        * `GenerationUnitInstalledCapacity(MW)`: installed capacity of the generation unit in MW
+*Note: The raw data files on electricity production are quite large (multiple gigabytes). Therefore, we have preprocessed and filtered them to only include the relevant data for our analysis. The processed data files are stored in the `Data/` directory. Those raw data are not sent with this project/included in the repository. In case of questions or if You want acces do not hesitate to email [mailto:wouter.vermeulen@student.uclouvain.be](wouter.vermeulen@student.uclouvain.be).*
 
 
-### On installed capacity (not yet used !!!)
-Note sure necessary because also included in actual generation files, but could be useful for verification.
-* https://www.belgianoffshoreplatform.be/en/projects/ gives installed generation capacity per offshore wind farm + their location
-* `InstalledCapacity/<year>_PerProductionUnit.csv`: Installed capacity per production unit for each year (only includes units with capacity >= 100MW).
-    * Use: understand the installed capacity of different production units in Belgium to allow to express actual production as a percentage of installed capacity (= utilization rate or capacity factor).
-    * https://transparencyplatform.zendesk.com/hc/en-us/articles/16648452972180-Installed-Capacity-Per-Production-Unit-14-1-B
-    * Filter on: `ControlArea="10YBE----------2" and Status="COMMISSIONED"`(Belgium, operational units)
-        * `ControlArea`: control area of the production unit
-        * `Status`: operational status of the production unit
-    * Other columns of interest: `["EICCode", "Name", "Type", "InstalledCapacity"]`
-        * `EICCode`: unique identifier for each production unit
-        * `Name`: name of the production unit
-        * `Type`: type of production unit (non-exhaustive list: `{"B01": "Biomass", "B04": "Fossil Gas", "B10": "Hydro Pumped Storage", "B14": "Nuclear", "B18": "Wind Offshore", "B25": "Energy storage"}`)
-        * `Location`: geographical location of the production unit (should be `"Belgium"` for all filtered units)
-        * `InstalledCapacity`: installed capacity in MW
-* `InstalledCapacity/Aggregated.csv`: Aggregated installed generation capacity per type, year, and control area.
-    * Use: verify the installed capacity data from the production unit level by comparing with aggregated data (and possible determine missing capacity from smaller units <100MW).
-    * https://transparencyplatform.zendesk.com/hc/en-us/articles/16648300912916-Installed-Generation-Capacity-Aggregated-14-1-A
-    * Filter on: `ControlArea="10YBE----------2 and Year=<year>"`(Belgium and by year of interest)
-        * `ControlArea`: control area of the production unit
-    * Other columns of interest: `["Year", "Type", "InstalledCapacity"]`
-        * `ProductionType`: type of production unit
-            * Of interest: `Wind Offshore`
-        * `AreaMapCode`: geographical location of the production unit (can be )
-            * Of interest: `BE`
+## Subfolders
+
+| Subfolder Name | Description                                                                                                                     |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `Geography/`   | Contains geographical data files such as weather station coordinates and shapefiles for offshore wind zones and EEZ boundaries. |
+| `Weather/`     | Contains raw wind data files, including wind speeds and directions from various weather stations.                               |
+| `Electricity/` | Contains raw electricity production data files for different areas and production units.                                        |
+
+
+## Data sources
+See `Data/README.md` for an overview of the data sources used in this project.
+

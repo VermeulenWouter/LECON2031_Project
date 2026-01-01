@@ -13,7 +13,7 @@ import re
 
 #%%
 _FILE_PATH = path.dirname(__name__)
-RAWDATA_PATH = path.join(_FILE_PATH, "DataRaw/WindData")
+RAWDATA_PATH = path.join(_FILE_PATH, "DataRaw/Weather")
 DATA_PATH = path.join(_FILE_PATH, "Data")
 
 # Debug settings

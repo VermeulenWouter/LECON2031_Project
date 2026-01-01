@@ -16,15 +16,6 @@ import pandas as pd
 import warnings
 
 
-#%%
-
-_FILE_PATH = path.dirname(__name__)
-WINDDIRECTIONS_DATA_PATH = path.join(_FILE_PATH, "Data", "Weather", "WindDirections.csv")
-VISUALISATION_PATH = path.join(_FILE_PATH, "Visualisations", "WindPreprocessing")
-
-SKIP_VISUALISATIONS = True  # Set to True to skip generating visualisations, can speed up a little
-
-#%%
 def filter_wind_directions(df):
     """Filter wind direction data: set 0 (no wind) and 990 (variable wind) to NaN."""
     return df.replace({0: np.nan, 990: np.nan})
@@ -53,41 +44,29 @@ def circular_correlation_coefficient(angles1: pd.Series, angles2: pd.Series) -> 
                         np.deg2rad(filter_wind_directions(angles2)))
 
 
-#%%
-
-def load_winddirection_data():
-    df = pd.read_csv(WINDDIRECTIONS_DATA_PATH, sep=";", parse_dates=['DateTime (UTC)'])
+def load_timeseries_data(path: str) -> pd.DataFrame:
+    df = pd.read_csv(path, sep=";", parse_dates=['DateTime (UTC)'])
     df = df[df["DateTime (UTC)"] > pd.Timestamp("2014-12-31 23:59:59")]
     return df
 
 
-winddirection_df = load_winddirection_data()
-winddirection_df = winddirection_df.drop(columns=["Europoint"])  # Afer analysis, geographically redundant with Borssele Alpha and further away
-winddirection_df_onlyreal = filter_wind_directions(winddirection_df)  # DataFrame with 0 and 990 replaced by NaN
-stations = [col for col in winddirection_df.columns if col != 'DateTime (UTC)']
-
-print(f"Loaded wind direction data from {WINDDIRECTIONS_DATA_PATH}")
-print(f"\tStations: {stations}")
-print(f"\tData sample:\n\t{winddirection_df_onlyreal.head()}")
-
-#%%
-
-def plot_wind_directions(winddirection_df: pd.DataFrame, filepath: str = None):
+def plot_wind(wind_df: pd.DataFrame, stations: list[str], filepath: str = None, quantity: str = "Wind Direction", unit: str = "°"):
     plt.figure(figsize=(12, 6))
     for station in stations:
-        plt.plot(winddirection_df['DateTime (UTC)'], winddirection_df[station], label=f'{station}', marker="o", markersize=2, linestyle=None)
-    plt.xlabel('DateTime (UTC)')
-    plt.ylabel('Wind Direction [°]')
-    plt.title('Wind Direction Over Time')
+        plt.plot(wind_df["DateTime (UTC)"], wind_df[station], label=f'{station}', marker="o", markersize=2, linestyle=None)
+    plt.xlabel("DateTime (UTC)")
+    plt.ylabel(f"{quantity} [{unit}]")
+    plt.title(f"{quantity} Over Time")
     plt.legend()
     plt.grid()
     if filepath:
         plt.savefig(filepath, dpi=300)
+        print(f"Saved wind plot to {filepath}")
     else:
         plt.show()
 
 
-def plot_wind_directions_with_zooms(df, filepath=None):
+def plot_wind_with_zooms(df, stations: list[str], filepath=None, quantity: str = "Wind Direction", unit: str = "°", ymax: float = 360):
     fig = plt.figure(figsize=(14, 10))
     gs = fig.add_gridspec(4, 3, height_ratios=[3, 1, 1, 1])
     ax_main = fig.add_subplot(gs[0, :])
@@ -95,26 +74,26 @@ def plot_wind_directions_with_zooms(df, filepath=None):
     for station in stations:
         ax_main.plot(df['DateTime (UTC)'], df[station], marker="o", markersize=2, linestyle=None, label=station)
 
-    ax_main.set_title("Wind Direction Over Time")
-    ax_main.set_ylabel("Wind Direction [°]")
+    ax_main.set_title(f"{quantity} Over Time")
+    ax_main.set_ylabel(f"{quantity} [{unit}]")
     ax_main.grid(True)
     ax_main.legend(loc="upper right")
 
     def add_zoom_subplot(row, center_idx, width_days=30):
         ax_zoom = fig.add_subplot(gs[row, :])
-        center_time = df['DateTime (UTC)'].iloc[center_idx]
+        center_time = df["DateTime (UTC)"].iloc[center_idx]
         tmin = center_time - pd.Timedelta(days=width_days/2)
         tmax = center_time + pd.Timedelta(days=width_days/2)
 
         for station in stations:
-            ax_zoom.plot(df['DateTime (UTC)'], df[station], marker="o", markersize=2, linestyle=None)
+            ax_zoom.plot(df["DateTime (UTC)"], df[station], marker="o", markersize=2, linestyle=None)
 
         ax_zoom.set_xlim(tmin, tmax)
-        ax_zoom.set_ylim(0, 360)
+        ax_zoom.set_ylim(0, ymax)
         ax_zoom.grid(True)
-        ax_zoom.set_ylabel("°")
+        ax_zoom.set_ylabel(unit)
 
-        rect = Rectangle((tmin, 0), tmax - tmin, 360, linewidth=1.5, edgecolor="red", facecolor="none")
+        rect = Rectangle((tmin, 0), tmax - tmin, ymax, linewidth=5, edgecolor="red", facecolor="none")
         ax_main.add_patch(rect)
 
         ax_main.add_line(Line2D([tmin, tmin], [0, ax_zoom.get_ylim()[1]], transform=ax_main.transData, color="red", linewidth=0.8))
@@ -126,17 +105,13 @@ def plot_wind_directions_with_zooms(df, filepath=None):
     add_zoom_subplot(3, int(n * 0.80))
 
     plt.tight_layout()
-    plt.savefig(filepath, dpi=300) if filepath else plt.show()
+    if filepath:
+        plt.savefig(filepath, dpi=300)
+        print(f"Saved wind plot with zooms to {filepath}")
+    else:
+        plt.show()
 
-
-if not SKIP_VISUALISATIONS:
-    plot_wind_directions(winddirection_df_onlyreal, path.join(VISUALISATION_PATH, "WindDirections_OverTime.png"))
-    plot_wind_directions_with_zooms(winddirection_df_onlyreal, path.join(VISUALISATION_PATH, "WindDirections_OverTime_Zoomed.png"))
-
-# CONCLUSION: Seems to show all stations give very similar wind directions in time
-
-#%%
-def correlation_matrix(df, min_samples=30):
+def correlation_matrix_circular(df, stations: list[str], min_samples=30):
     """
     Calculate the pairwise circular correlation coefficient matrix between wind direction time series.
 
@@ -166,7 +141,7 @@ def angular_diff_deg(a, b):
 def station_deviation_stats(df):
     """
 
-    df: DataFrame (n_times x n_stations), wind directions in degrees.
+    df: DataFrame, wind directions in degrees.
 
     Returns:
         per_time: deviation per station per time
@@ -189,33 +164,6 @@ def station_deviation_stats(df):
     return per_station_summary
 
 
-C = correlation_matrix(winddirection_df_onlyreal)
-C_off_diag = C.to_numpy()[~np.eye(C.shape[0], dtype=bool)]  # Off-diagonal elements (strictly speaking, double info)
-print(f"\nCircular correlation coefficient matrix between wind direction stations:\n{C}")
-print(f"\tMean off-diagonal circular correlation coefficient: {np.nanmean(C_off_diag):.4f}")
-print(f"\tMin off-diagonal circular correlation coefficient: {np.nanmin(C_off_diag):.4f}")
-
-winddirection_df_onlyreal_notime = winddirection_df_onlyreal.copy()
-winddirection_df_onlyreal_notime = winddirection_df_onlyreal_notime.drop(columns=['DateTime (UTC)'])
-deviation_stats = station_deviation_stats(winddirection_df_onlyreal_notime)
-print("\nStation deviation statistics:")
-print(deviation_stats)
-
-# CONCLUSION: Justifies using an average wind direction over all stations as a representative wind direction time series.
-
-#%%
-
-winddirection_avg = circular_nanmean(winddirection_df_onlyreal_notime)
-winddirection_df_onlyreal = winddirection_df_onlyreal.assign(AverageWindDirection=winddirection_avg)
-
-print("\nSample of representative wind direction time series (averaged over stations):")
-print(winddirection_df_onlyreal.head())
-print(f"\n\tTotal samples: {len(winddirection_df_onlyreal)}")
-print(f"\tValid samples (not NaN): {winddirection_df_onlyreal['AverageWindDirection'].notna().sum()}")
-
-winddirection_df_onlyreal[["DateTime (UTC)", "AverageWindDirection"]].to_csv(path.join(_FILE_PATH, "Data", "Weather", "WindDirectionsAvg.csv"), index=False)
-
-#%%
 def plot_windrose(df, bins=36, color="C0", edgecolor="white", area_proportional=True, filepath=None, title="Wind Rose"):
     """Plot a wind rose from wind direction data.
 
@@ -229,8 +177,8 @@ def plot_windrose(df, bins=36, color="C0", edgecolor="white", area_proportional=
     """
     directions_deg = pd.to_numeric(df['AverageWindDirection'], errors='coerce')
     directions = np.deg2rad(directions_deg.dropna())
-
     counts, edges = np.histogram(directions, bins=bins)
+
     widths = np.diff(edges)
 
     if area_proportional:
@@ -243,7 +191,7 @@ def plot_windrose(df, bins=36, color="C0", edgecolor="white", area_proportional=
     plt.close('all')
     fig = plt.figure(figsize=(8, 8))
     ax = plt.subplot(111, projection='polar')
-    ax.bar(edges[:-1], radii, width=widths, bottom=0, align='edge', color=color, edgecolor=edgecolor, linewidth=0.8)
+    ax.bar(edges[:-1]+widths/2, radii, width=widths, bottom=0, align='center', color=color, edgecolor=edgecolor, linewidth=0.8)
 
     # Fix radial labels to show correct percentages
     if area_proportional:
@@ -262,15 +210,10 @@ def plot_windrose(df, bins=36, color="C0", edgecolor="white", area_proportional=
 
     if filepath:
         plt.savefig(filepath, dpi=300)
+        print(f"Saved windrose plot to {filepath}")
     else:
         plt.show()
 
-
-plot_windrose(winddirection_df_onlyreal, filepath=path.join(VISUALISATION_PATH, "WindDirections_WindRose_AreaProportional.png"))
-plot_windrose(winddirection_df_onlyreal, area_proportional=False, filepath=path.join(VISUALISATION_PATH, "WindDirections_WindRose_HeightProportional.png"))
-
-
-#%%
 
 def shift_angles(angles_deg, shift):
     return (angles_deg - shift) % 360
@@ -419,15 +362,9 @@ def plot_daily_profile(day_profile, full_df, shift=90, include_ci=True, ci_level
     plt.title("Typical Daily Wind Direction Profile")
     if filepath:
         plt.savefig(filepath, dpi=300)
+        print(f"Saved daily profile plot to {filepath}")
     else:
         plt.show()
-
-
-df_daily = circular_profile_shifted(winddirection_df_onlyreal, shift=60, smooth_window=5, timescale="day")
-plot_daily_profile(df_daily, winddirection_df_onlyreal, 60, filepath=path.join(VISUALISATION_PATH, "WindDirections_Daily_Profile.png"))
-
-
-#%%
 
 
 def plot_yearly_profile(year_profile, full_df, shift=90, include_raw=True, include_ci=True, ci_level=0.95, filepath=None):
@@ -502,8 +439,71 @@ def plot_yearly_profile(year_profile, full_df, shift=90, include_raw=True, inclu
 
     if filepath:
         plt.savefig(filepath, dpi=300)
+        print(f"Saved yearly profile plot to {filepath}")
     else:
         plt.show()
 
-year_profile = circular_profile_shifted(winddirection_df_onlyreal, shift=60, smooth_window=30, timescale="year")
-plot_yearly_profile(year_profile, winddirection_df_onlyreal, include_raw=True, include_ci=True, shift=60, filepath=path.join(VISUALISATION_PATH, "WindDirections_Yearly_Profile.png"))
+
+if __name__ == "__main__":
+
+    # %%
+    _FILE_PATH = path.dirname(__name__)
+    WINDDIRECTIONS_DATA_PATH = path.join(_FILE_PATH, "Data", "Weather", "WindDirections.csv")
+    VISUALISATION_PATH = path.join(_FILE_PATH, "Visualisations", "WindPreprocessing")
+
+    #%%
+    winddirection_df = load_timeseries_data(WINDDIRECTIONS_DATA_PATH)
+
+    # Afer analysis, geographically redundant with Borssele Alpha and further away
+    winddirection_df = winddirection_df.drop(columns=["Europoint"])
+
+    winddirection_df_onlyreal = filter_wind_directions(winddirection_df)  # DataFrame with 0 and 990 replaced by NaN
+    stations = [col for col in winddirection_df.columns if col != 'DateTime (UTC)']
+
+    print(f"Loaded wind direction data from {WINDDIRECTIONS_DATA_PATH}")
+    print(f"\tStations: {stations}")
+    print(f"\tData sample:\n\t{winddirection_df_onlyreal.head()}")
+
+    #%%
+    plot_wind(winddirection_df_onlyreal, stations, path.join(VISUALISATION_PATH, "WindDirections_OverTime.png"))
+    plot_wind_with_zooms(winddirection_df_onlyreal, stations, path.join(VISUALISATION_PATH, "WindDirections_OverTime_Zoomed.png"))
+
+    # CONCLUSION: Seems to show all stations give very similar wind directions in time
+
+    #%%
+    C = correlation_matrix_circular(winddirection_df_onlyreal, stations)
+    C_off_diag = C.to_numpy()[~np.eye(C.shape[0], dtype=bool)]  # Off-diagonal elements (strictly speaking, double info)
+    print(f"\nCircular correlation coefficient matrix between wind direction stations:\n{C}")
+    print(f"\tMean off-diagonal circular correlation coefficient: {np.nanmean(C_off_diag):.4f}")
+    print(f"\tMin off-diagonal circular correlation coefficient: {np.nanmin(C_off_diag):.4f}")
+
+    winddirection_df_onlyreal_notime = winddirection_df_onlyreal.copy()
+    winddirection_df_onlyreal_notime = winddirection_df_onlyreal_notime.drop(columns=['DateTime (UTC)'])
+    deviation_stats = station_deviation_stats(winddirection_df_onlyreal_notime)
+    print("\nStation deviation statistics:")
+    print(deviation_stats)
+
+    # CONCLUSION: Justifies using an average wind direction over all stations as a representative wind direction time series.
+
+    #%%
+    winddirection_avg = circular_nanmean(winddirection_df_onlyreal_notime)
+    winddirection_df_onlyreal = winddirection_df_onlyreal.assign(AverageWindDirection=winddirection_avg)
+
+    print("\nSample of representative wind direction time series (averaged over stations):")
+    print(winddirection_df_onlyreal.head())
+    print(f"\n\tTotal samples: {len(winddirection_df_onlyreal)}")
+    print(f"\tValid samples (not NaN): {winddirection_df_onlyreal['AverageWindDirection'].notna().sum()}")
+
+    winddirection_df_onlyreal[["DateTime (UTC)", "AverageWindDirection"]].to_csv(path.join(_FILE_PATH, "Data", "Weather", "WindDirectionsAvg.csv"), index=False, sep=";")
+
+    #%%
+    plot_windrose(winddirection_df_onlyreal, filepath=path.join(VISUALISATION_PATH, "WindDirections_WindRose_AreaProportional.png"))
+    plot_windrose(winddirection_df_onlyreal, area_proportional=False, filepath=path.join(VISUALISATION_PATH, "WindDirections_WindRose_HeightProportional.png"))
+
+    #%%
+    df_daily = circular_profile_shifted(winddirection_df_onlyreal, shift=60, smooth_window=5, timescale="day")
+    plot_daily_profile(df_daily, winddirection_df_onlyreal, 60, filepath=path.join(VISUALISATION_PATH, "WindDirections_Daily_Profile.png"))
+
+    #%%
+    year_profile = circular_profile_shifted(winddirection_df_onlyreal, shift=60, smooth_window=30, timescale="year")
+    plot_yearly_profile(year_profile, winddirection_df_onlyreal, include_raw=True, include_ci=True, shift=60, filepath=path.join(VISUALISATION_PATH, "WindDirections_Yearly_Profile.png"))

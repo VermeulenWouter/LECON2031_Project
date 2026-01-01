@@ -80,3 +80,20 @@ This file contains processed wind direction data, an average of multiple others.
 |------------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `DateTime (UTC)`       | `YYYY-MM-DD HH:MM:SS`      | The date and time (in UTC) of the data point. Data is hourly and describes the hour in the future: if this field is for example `2025-01-01 12:00:00` then the data it contains is for the period from 12h00 to 13h00.                                                      |
 | `AverageWindDirection` | `float` or `''` (no value) | The average wind direction in degrees (in the range `1-360`, where `90=east`, `180=south`, `270=west` and `360=north`). Values `0` (no wind) and `990` (variable wind) have been transformed to `''` (no value). Note this is the direction FROM WHICH the wind is blowing. |
+
+
+## `WindSpeedsAvg.csv`
+### Description
+This file contains processed wind speed data, an average of multiple others.
+
+### Sources
+* See `WindSpeeds.csv`
+
+### Transformation of raw data
+* Created in `InvestigateWindSpeed.py` as an average of some columns of `WindSpeeds.csv`.
+
+### Structure
+| Column                 | Format                     | Description                                                                                                                                                                                                                                            | 
+|------------------------|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DateTime (UTC)`       | `YYYY-MM-DD HH:MM:SS`      | The date and time (in UTC) of the data point. Data is hourly and describes the hour in the future: if this field is for example `2025-01-01 12:00:00` then the data it contains is for the period from 12h00 to 13h00.                                 |
+| `AverageWindSpeed`     | `float` or `''` (no value) | The average wind speed (at height 10m), in `m/s`.                                                                                                                                                                                                 |

@@ -1,0 +1,12 @@
+﻿--------------------------------
+Alle onderstaande data is in UTC
+--------------------------------
+Data opgevraagd van 01/01/2015 00:00 tot 01/01/2016 00:00
+--------------------------------
+ 
+Westhinder - Measuring pile - Average wind direction
+	From 1/01/2015 0:00 till 1/01/2016 0:00 : /MP7.WRS_001_MP7WI0WRS010.txt
+Westhinder - Measuring pile - Average wind speed (at 10 m height)
+	From 1/01/2015 0:00 till 1/01/2016 0:00 : /MP7.WVC_001_MP7WI0WVC010.txt
+Westhinder - Measuring pile - Max 3-seconds wind gust (at 10 m height)
+	From 1/01/2015 0:00 till 1/01/2016 0:00 : /MP7.WC3_001_MP7WI0WC3010.txt

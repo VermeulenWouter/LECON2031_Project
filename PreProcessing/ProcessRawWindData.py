@@ -12,8 +12,8 @@ import pandas as pd
 import re
 
 #%%
-_FILE_PATH = path.dirname(__name__)
-RAWDATA_PATH = path.join(_FILE_PATH, "DataRaw/Weather")
+_FILE_PATH = path.dirname(path.abspath(path.dirname(__name__)))
+RAWDATA_PATH = path.join(_FILE_PATH, "DataRaw", "Weather")
 DATA_PATH = path.join(_FILE_PATH, "Data")
 
 # Debug settings

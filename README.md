@@ -29,20 +29,20 @@ pip install -r requirements.txt
 ### Running the code
 To follow the project timeline, run the scripts (in the given order!):
 ```bash
-python ProcessProductionRawData.py  # Process raw ENTSO-E data (datafiles not included because too large (multiple gigabytes)) 
+python PreProcessing/ProcessProductionRawData.py  # Process raw ENTSO-E data (datafiles not included because too large (multiple gigabytes)) 
 ```
 
 ```bash
-python ProcessRawWindData.py  # Process raw wind data from KNMI and MVB
+python PreProcessing/ProcessRawWindData.py  # Process raw wind data from KNMI and MVB
 ```
 
 ```bash
-python InvestigateWindDirection.py  # Investigate wind direction data and create final average wind direction file
+python PreProcessing/InvestigateWindDirection.py  # Investigate wind direction data and create final average wind direction file
 # Note this script outputs in the console, but also creates a file `Data/Weather/WindDirectionsAvg.csv` with the final average wind direction data, and some plots in `Visualisations/WindPreprocessing/`
 ```
 
 ```bash
-python InvestigateWindSpeed.py  # Investigate wind speed data and create final average wind speed file
+python PreProcessing/InvestigateWindSpeed.py  # Investigate wind speed data and create final average wind speed file
 # Note this script outputs in the console, but also creates a file `Data/Weather/WindSpeedsAvg.csv` with the final average wind speed data, and some plots in `Visualisations/WindPreprocessing/`
 ```
 
@@ -79,8 +79,9 @@ The main code files are located in the root directory of the project. The follow
 | `DataRaw/`                    | Folder containing the raw data files used in the project. The pre-processed and filtered data files are stored in the `Data/` directory.                                                                                                                                                                                            |
 | `Data/`                       | Folder containing various data files used in the model and/or analysis, including processed electricity production data and wind data.                                                                                                                                                                                              |
 | `Visualisations/`             | Folder pre-created to contain visualizations and plots generated during the analysis.                                                                                                                                                                                                                                               |
-| `ProcessRawData.py`           | Script to preprocess raw data from ENTSO-E Transparency Platform and generate the processed data files in the `Data/` directory.                                                                                                                                                                                                    |
-| `ProcessRawWindData.py`       | Script to preprocess raw wind data from KNMI and MVB and generate some of the processed wind data files in the `Data/Weather/` directory.                                                                                                                                                                                           |
-| `InvestigateWindDirection.py` | Script to preprocess the wind direction data (from `Data/Weather/WindDirections.csv`) and giving final data used for the model (stored in `Data/Weather/WindDirectionsAvg.csv`. Checks correlation of different stations, then also looks at properties (main direction, seasonality) of the obtained final average wind direction. |
-| `InvestigateWindSpeed.py`     | Script to preprocess the wind speed data (from `Data/Weather/WindSpeeds.csv`) and giving final data (stored in `Data/Weather/WindSpeedsAvg.csv`. Checks correlation of different stations, then also looks at seasonality of the obtained final average wind speed.                                                                 |
+
+| `PreProcessing/ProcessRawData.py`           | Script to preprocess raw data from ENTSO-E Transparency Platform and generate the processed data files in the `Data/` directory.                                                                                                                                                                                                    |
+| `PreProcessing/ProcessRawWindData.py`       | Script to preprocess raw wind data from KNMI and MVB and generate some of the processed wind data files in the `Data/Weather/` directory.                                                                                                                                                                                           |
+| `PreProcessing/InvestigateWindDirection.py` | Script to preprocess the wind direction data (from `Data/Weather/WindDirections.csv`) and giving final data used for the model (stored in `Data/Weather/WindDirectionsAvg.csv`. Checks correlation of different stations, then also looks at properties (main direction, seasonality) of the obtained final average wind direction. |
+| `PreProcessing/InvestigateWindSpeed.py`     | Script to preprocess the wind speed data (from `Data/Weather/WindSpeeds.csv`) and giving final data (stored in `Data/Weather/WindSpeedsAvg.csv`. Checks correlation of different stations, then also looks at seasonality of the obtained final average wind speed.                                                                 |
 | *#TODO*                       | Actual project code.                                                                                                                                                                                                                                                                                                                |

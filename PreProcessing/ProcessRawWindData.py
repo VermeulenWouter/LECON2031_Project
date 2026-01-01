@@ -12,7 +12,7 @@ import pandas as pd
 import re
 
 #%%
-_FILE_PATH = path.dirname(path.abspath(path.dirname(__name__)))
+_FILE_PATH = path.dirname(path.abspath(path.dirname(__file__)))
 RAWDATA_PATH = path.join(_FILE_PATH, "DataRaw", "Weather")
 DATA_PATH = path.join(_FILE_PATH, "Data")
 

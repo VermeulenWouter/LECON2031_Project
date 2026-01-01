@@ -14,7 +14,7 @@ from typing import List, Optional
 
 #%%
 
-_FILE_PATH = path.dirname(path.abspath(path.dirname(__name__)))
+_FILE_PATH = path.dirname(path.abspath(path.dirname(__file__)))
 # RAWDATA_PATH = "D:/Temp projet econometrics"  # Because files too big
 RAWDATA_PATH = path.join(_FILE_PATH, "DataRaw")
 DATA_PATH = path.join(_FILE_PATH, "Data", "Electricity")

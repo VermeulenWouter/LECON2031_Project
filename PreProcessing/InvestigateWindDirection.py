@@ -447,7 +447,7 @@ def plot_yearly_profile(year_profile, full_df, shift=90, include_raw=True, inclu
 if __name__ == "__main__":
 
     # %%
-    _FILE_PATH = path.dirname(path.abspath(path.dirname(__name__)))
+    _FILE_PATH = path.dirname(path.abspath(path.dirname(__file__)))
     WINDDIRECTIONS_DATA_PATH = path.join(_FILE_PATH, "Data", "Weather", "WindDirections.csv")
     VISUALISATION_PATH = path.join(_FILE_PATH, "Visualisations", "WindPreprocessing")
 

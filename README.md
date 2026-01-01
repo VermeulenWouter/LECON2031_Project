@@ -69,7 +69,7 @@ See `Data/README.md` for more information on data sources.
 
 ## Code Structure
 
-# Folders
+### Folders
 The main code files are located in the root directory of the project. The following table provides an overview of the main code files and folders and their purposes.
 
 *For more details on the different folders and the files they contain, see the respective README files in those folders.*

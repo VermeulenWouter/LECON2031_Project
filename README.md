@@ -1,4 +1,7 @@
 
+## Authors
+* Wouter Vermeulen (wouter.vermeulen@student.uclouvain.be), NOMA 35342100
+
 ## How to run
 
 Install required packages (see `requirements.txt`):
@@ -18,6 +21,11 @@ python ProcessRawWindData.py  # Process raw wind data from KNMI and MVB
 ```bash
 python InvestigateWindDirection.py  # Investigate wind direction data and create final average wind direction file
 # Note this script outputs in the console, but also creates a file `Data/Weather/WindDirectionsAvg.csv` with the final average wind direction data, and some plots in `Visualisations/WindPreprocessing/`
+```
+
+```bash
+python InvestigateWindSpeed.py  # Investigate wind speed data and create final average wind speed file
+# Note this script outputs in the console, but also creates a file `Data/Weather/WindSpeedsAvg.csv` with the final average wind speed data, and some plots in `Visualisations/WindPreprocessing/`
 ```
 
 #TODO

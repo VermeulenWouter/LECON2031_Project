@@ -3,7 +3,7 @@ Unionize wind speed data from multiple stations (after checking correlations bet
 to do so). Then analyze typical daily and yearly wind speed profiles.
 
 @author: Wouter Vermeulen
-@date: 2025-12-29
+@date: 2025-01-01
 """
 
 #%%

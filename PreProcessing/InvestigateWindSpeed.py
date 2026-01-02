@@ -14,7 +14,7 @@ import pandas as pd
 from scipy.stats import t
 
 from InvestigateWindDirection import load_timeseries_data, plot_wind, plot_wind_with_zooms
-
+from Helper import *
 
 def correlation_matrix(df, stations):
     C = pd.DataFrame(index=stations, columns=stations, dtype=float)
@@ -40,6 +40,9 @@ def station_deviation_stats(df):
         deviation = (df[station] - mean_wind).abs()
         stats.at[station, "Mean Deviation (m/s)"] = deviation.mean()
         stats.at[station, "95% Deviation (m/s)"] = deviation.quantile(0.95)
+        deviation_percent = (deviation / mean_wind).replace([np.inf, -np.inf], np.nan).dropna() * 100
+        stats.at[station, "Mean Deviation (%)"] = deviation_percent.mean()
+        stats.at[station, "95% Deviation (%)"] = deviation_percent.quantile(0.95)
     return stats
 
 #%%

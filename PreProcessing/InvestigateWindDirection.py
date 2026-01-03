@@ -122,7 +122,7 @@ def plot_windrose(df, bins=36, color="C0", edgecolor="white", area_proportional=
 
     gap = widths * 0.05
     widths = widths - gap
-    plt.close('all')
+
     fig = plt.figure(figsize=(8, 8))
     ax = plt.subplot(111, projection='polar')
     ax.bar(edges[:-1]+widths/2, radii, width=widths, bottom=0, align='center', color=color, edgecolor=edgecolor, linewidth=0.8)
@@ -147,6 +147,7 @@ def plot_windrose(df, bins=36, color="C0", edgecolor="white", area_proportional=
         print(f"Saved windrose plot to {filepath}")
     else:
         plt.show()
+    plt.close(fig)
 
 
 def shift_angles(angles_deg, shift):
@@ -299,6 +300,7 @@ def plot_daily_profile(day_profile, full_df, shift=90, include_ci=True, ci_level
         print(f"Saved daily profile plot to {filepath}")
     else:
         plt.show()
+    plt.close(fig)
 
 
 def plot_yearly_profile(year_profile, full_df, shift=90, include_raw=True, include_ci=True, ci_level=0.95, filepath=None):
@@ -376,6 +378,7 @@ def plot_yearly_profile(year_profile, full_df, shift=90, include_raw=True, inclu
         print(f"Saved yearly profile plot to {filepath}")
     else:
         plt.show()
+    plt.close(fig)
 
 
 if __name__ == "__main__":

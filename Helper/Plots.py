@@ -22,7 +22,7 @@ def plot_series(df: pd.DataFrame, cols: list[str], filepath: str = None, quantit
     :param quantity: the quantity being plotted (used in title and y-label)
     :param unit: the unit of the quantity (used in y-label)
     """
-    plt.figure(figsize=(12, 6))
+    fig = plt.figure(figsize=(12, 6))
     for col in cols:
         plt.plot(df.index, df[col], label=f'{col}', marker="o", markersize=2, linestyle=None)
     plt.xlabel("DateTime (UTC)")
@@ -41,9 +41,10 @@ def plot_series(df: pd.DataFrame, cols: list[str], filepath: str = None, quantit
         print(f"Saved wind plot to {filepath}")
     else:
         plt.show()
+    plt.close(fig)
 
 
-def plot_series_with_zooms(df, cols: list[str], filepath: str | None = None, quantity: str | None = None, unit: str | None = None, ymax: float | None = None):
+def plot_series_with_zooms(df, cols: list[str], filepath: str | None = None, quantity: str | None = None, unit: str | None = None, ymax: float | None = None, colors: list[str] | None = None):
     """
     Plot one or multiple timeseries and make zooms at 20%, 50% and 80% of 30 days of data.
 
@@ -59,8 +60,12 @@ def plot_series_with_zooms(df, cols: list[str], filepath: str | None = None, qua
     gs = fig.add_gridspec(4, 3, height_ratios=[3, 1, 1, 1])
     ax_main = fig.add_subplot(gs[0, :])
 
-    for col in cols:
-        ax_main.plot(df.index, df[col], marker="o", markersize=2, linestyle=None, label=col)
+    for i, col in enumerate(cols):
+        if colors is not None:
+            color = colors[i]
+            ax_main.plot(df.index, df[col], marker="o", markersize=2, linestyle=None, label=col, color=color)
+        else:
+            ax_main.plot(df.index, df[col], marker="o", markersize=2, linestyle=None, label=col)
 
     if quantity is not None:
         ax_main.set_title(f"{quantity} Over Time")
@@ -88,7 +93,6 @@ def plot_series_with_zooms(df, cols: list[str], filepath: str | None = None, qua
 
         ax_zoom.xaxis.set_minor_locator(mdates.DayLocator())
         ax_zoom.grid(True, axis='x', which='minor')
-        ax_zoom.grid(True)
         if unit is not None:
             ax_zoom.set_ylabel(unit)
 
@@ -106,3 +110,4 @@ def plot_series_with_zooms(df, cols: list[str], filepath: str | None = None, qua
         print(f"Saved wind plot with zooms to {filepath}")
     else:
         plt.show()
+    plt.close(fig)

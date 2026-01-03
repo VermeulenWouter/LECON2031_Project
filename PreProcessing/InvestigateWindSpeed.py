@@ -247,6 +247,8 @@ def plot_yearly_profile(df, column: str, include_raw=True, include_ci=True, ci_l
     else:
         plt.show()
 
+    return mean.values
+
 
 #%%
 if __name__ == "__main__":

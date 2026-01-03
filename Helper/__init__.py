@@ -33,13 +33,13 @@ unitname_to_commonname = {
     "Nobelwind Offshore Windpark": "Nobelwind",
     "Rentel Offshore WP": "Rentel",
     "Norther Offshore WP": "Norther",
-    "Northwester 2": "Northwester 2",
+    "Northwester 2": "Northwester_2",
     "Mermaid Offshore WP": "Mermaid",
     "Seastar Offshore WP": "Seastar",
     "Belwind Phase 1": "Belwind",
     "Northwind": "Northwind",
-    "Thorntonbank - C-Power - Area NE": "Thorntonbank NE",
-    "Thorntonbank - C-Power - Area SW": "Thorntonbank SW"
+    "Thorntonbank - C-Power - Area NE": "Thorntonbank_NE",
+    "Thorntonbank - C-Power - Area SW": "Thorntonbank_SW"
 }
 
 commonname_to_unitname = {v: k for k, v in unitname_to_commonname.items()}

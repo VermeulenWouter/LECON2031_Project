@@ -48,94 +48,47 @@ def plot_acf(df, column, lags=40, gridline_interval_lags=24, filepath: str | Non
     plt.close(fig)
 
 
-def test_daily_seasonality(df, column):
+def test_seasonality(df, column, freq: str = "daily"):
     """
-    Runs a daily (that is, with a cycle period of one day) seasonality test using OLS with hour dummies, extracts the estimated 24-hour seasonal pattern.
+    Runs a daily (that is, with a cycle period of one day) or yearly (that is, with a cycle period of one year) seasonality test using OLS with hour dummies, extracts the estimated 24-hour seasonal pattern.
 
     :param df: dataframe with datetime index
     :param column: column name existing in the df to test
-    :return: (estimated_pattern: pd.Series indexed by hour 0-23, f_test: statsmodels F-test result, model: statsmodels regression results)
+    :param freq: 'daily' or 'yearly' to indicate which seasonality to test
+    :return: (estimated_pattern: pd.Series indexed by hour 0-23 (or month 1-11), f_test: statsmodels F-test result, model: statsmodels regression results)
     """
-
     df2 = df[[column]].dropna().copy()
-    df2["hour"] = df2.index.hour
+    df2["hour" if freq == "daily" else "month"] = df2.index.hour if freq == "daily" else df2.index.month
 
-    # Fit OLS using patsy formula
-    model = smf.ols(f"{column} ~ C(hour)", data=df2).fit()
-    hour_terms = [name for name in model.params.index if name.startswith("C(hour)[T.")]
+    model = smf.ols(f"{column} ~ C(hour)" if freq == "daily" else f"{column} ~ C(month)", data=df2).fit()
 
-    # Build joint F-test constraint
-    constraint = " = 0, ".join(hour_terms) + " = 0"
+    terms = [name for name in model.params.index if name.startswith("C(hour)[T.") or name.startswith("C(month)[T.")]
+    constraint = " = 0, ".join(terms) + " = 0"
     f_test = model.f_test(constraint)
 
-    hours = np.arange(24)
-    pattern = []
+    if freq == "daily":
+        idx = np.arange(24)
+        pattern = [model.params["Intercept"] if h == 0 else model.params.get(f"C(hour)[T.{h}]", 0.0) + model.params["Intercept"] for h in idx]
+    else:
+        idx = range(1, 13)
+        pattern = [model.params["Intercept"] if m == 1 else model.params.get(f"C(month)[T.{m}]", 0.0) + model.params["Intercept"] for m in idx]
 
-    for h in hours:
-        if h == 0:
-            pattern.append(model.params["Intercept"])
-        else:
-            coef = model.params.get(f"C(hour)[T.{h}]", 0.0)
-            pattern.append(model.params["Intercept"] + coef)
-
-    pattern = pd.Series(pattern, index=hours, name="estimated_pattern")
-
-    return pattern, f_test, model
-
-
-def test_yearly_seasonality(df, column):
-    """
-    Tests for yearly (that is, with a time period of one year) seasonality using OLS with month dummies.
-    Extracts the estimated 12-month seasonal pattern.
-
-    :param df: dataframe with datetime index
-    :param column: column name existing in the df to test
-    :return: (estimated_pattern: pd.Series indexed by month 1-12, f_test: statsmodels F-test result, model: statsmodels regression results)
-    """
-
-    # Drop leading NaNs
-    df2 = df[[column]].dropna().copy()
-
-    # Extract month (1–12)
-    df2["month"] = df2.index.month
-
-    # Fit OLS using patsy formula (handles dummies automatically)
-    model = smf.ols(f"{column} ~ C(month)", data=df2).fit()
-
-    # Extract dummy coefficient names
-    month_terms = [name for name in model.params.index if name.startswith("C(month)[T.")]
-
-    # Build joint F-test constraint
-    constraint = " = 0, ".join(month_terms) + " = 0"
-    f_test = model.f_test(constraint)
-
-    # Build estimated 12-month pattern
-    pattern = []
-    for m in range(1, 13):
-        if m == 1:
-            # baseline month
-            pattern.append(model.params["Intercept"])
-        else:
-            coef = model.params.get(f"C(month)[T.{m}]", 0.0)
-            pattern.append(model.params["Intercept"] + coef)
-
-    pattern = pd.Series(pattern, index=range(1, 13), name="monthly_pattern")
-
+    pattern = pd.Series(pattern, index=idx, name="estimated_pattern")
     return pattern, f_test, model
 
 
 def remove_given_seasonalities(df, columns, daily_pattern, yearly_pattern):
     """
-    df: original dataframe with datetime index
-    columns: list of column names (wind farms)
-    hourly_patterns: dict {col: hourly_pattern_series}
-    monthly_patterns: dict {col: monthly_pattern_series}
+    Removes given daily and yearly seasonal components from the dataframe for the specified columns.
 
-    Returns a new dataframe with:
-    - original values
-    - hourly seasonal component
-    - monthly seasonal component
-    - deseasonalized values
+    :param df: the dataframe with datetime index
+    :param columns: list of column names for which to remove seasonalities
+    :param daily_pattern: dict {col: daily_pattern_series}
+    :param yearly_pattern: dict {col: yearly_pattern_series}
+    :return: new dataframe with original values, seasonal components, and deseasonalized values. Columns added:
+        - {col}_daily_season
+        - {col}_yearly_season
+        - {col}_deseason
     """
 
     out = df.copy()
@@ -155,61 +108,6 @@ def remove_given_seasonalities(df, columns, daily_pattern, yearly_pattern):
     return out
 
 
-def plot_seasonal_patterns(col, patterns_daily, patterns_yearly, mean_values_daily, mean_values_yearly, filepath: str | None = None, mean_values_daily_noseason: dict | None = None, mean_values_yearly_noseason: dict | None = None):
-    """
-    Plots:
-    - daily regression pattern vs daily mean-per-hour
-    - yearly regression pattern vs yearly mean-per-month
-    for a single wind farm column.
-    """
-
-    # Extract data
-    daily_pattern = patterns_daily[col]
-    yearly_pattern = patterns_yearly[col]
-    daily_mean = mean_values_daily[col]
-    yearly_mean = mean_values_yearly[col]
-
-    # Ensure everything is aligned
-    daily_x = np.arange(24)
-    yearly_x = np.arange(1, 13)
-
-    # Create figure
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-
-    # --- DAILY ---
-    axes[0].plot(daily_x, daily_pattern, marker="o", label="Daily Pattern (model)")
-    axes[0].plot(daily_x, daily_mean, marker="x", label="Daily Mean (empirical)")
-    if mean_values_daily_noseason is not None:
-        daily_mean_noseason = mean_values_daily_noseason[col]
-        axes[0].plot(daily_x, daily_mean_noseason, marker="s", label="Daily Mean No Season (empirical)")
-    axes[0].set_title(f"{col} – Daily Seasonality")
-    axes[0].set_xlabel("Hour of Day")
-    axes[0].set_ylabel("Capacity Factor")
-    axes[0].grid(True, alpha=0.3)
-    axes[0].legend()
-
-    # --- YEARLY ---
-    axes[1].plot(yearly_x, yearly_pattern, marker="o", label="Yearly Pattern (model)")
-    axes[1].plot(yearly_x, yearly_mean, marker="x", label="Yearly Mean (empirical)")
-    if mean_values_yearly_noseason is not None:
-        yearly_mean_noseason = mean_values_yearly_noseason[col]
-        axes[1].plot(yearly_x, yearly_mean_noseason, marker="s", label="Yearly Mean No Season (empirical)")
-    axes[1].set_title(f"{col} – Yearly Seasonality")
-    axes[1].set_xlabel("Month")
-    axes[1].set_ylabel("Capacity Factor")
-    axes[1].grid(True, alpha=0.3)
-    axes[1].legend()
-
-    plt.tight_layout()
-    if filepath:
-        plt.savefig(filepath, dpi=300)
-        print(f"Saved seasonal patterns plot to {filepath}")
-    else:
-        plt.show()
-    plt.close()
-
-
-
 #%%
 if __name__ == "__main__":
     FIGS = False
@@ -221,7 +119,6 @@ if __name__ == "__main__":
 
     df_allproductions = load_timeseries_data(PRODUCTION_DATA_PATH)
     df_generators = pd.read_csv(PRODUCTIONUNITS_DATA_PATH, sep=';')
-
 
     df_generators_ow = df_generators[df_generators['GenerationUnitType'] == "Wind Offshore"]
     df_productions_ow = df_allproductions[[*df_generators_ow["GenerationUnitCode"], "DateTime (UTC)"]]
@@ -242,6 +139,7 @@ if __name__ == "__main__":
     plt.savefig(path.join(VISUALISATION_PATH, "Stacked_Offshore_Wind_Generation.png"))
     if FIGS:
         plt.show()
+    plt.close(fig)
 
     # CONCLUSION: Norther Offshore WP is present twice but for different time periods => Merge
     #%%
@@ -282,7 +180,7 @@ if __name__ == "__main__":
     plt.savefig(path.join(VISUALISATION_PATH, "Stacked_Offshore_Wind_CapacityFactors.png"))
     if FIGS:
         plt.show()
-    plt.close()
+    plt.close(fig)
 
     for col in df_cf_ow.columns:
         plot_series_with_zooms(df_cf_ow, [col], filepath=path.join(VISUALISATION_PATH, f"TimeSeriesWithZooms_Offshore_Wind_CapacityFactor_{col.replace(' ', '_')}.png"), quantity=f"Capacity Factor of {col}", unit="", ymax=1.0, colors=[farms_to_color.get(col, None)])
@@ -318,9 +216,9 @@ if __name__ == "__main__":
     models_yearly = {}
     df_tmp = df_cf_ow.copy()
     for col in df_cf_ow.columns:
-        patterns_daily[col], f_tests_daily[col], models_daily[col] = test_daily_seasonality(df_cf_ow, col)
+        patterns_daily[col], f_tests_daily[col], models_daily[col] = test_seasonality(df_cf_ow, col, freq="daily")
         df_tmp[col + "_daily_removed"] = df_cf_ow[col] - df_cf_ow.index.hour.map(patterns_daily[col])
-        patterns_yearly[col], f_tests_yearly[col], models_yearly[col] = test_yearly_seasonality(df_tmp, col + "_daily_removed")
+        patterns_yearly[col], f_tests_yearly[col], models_yearly[col] = test_seasonality(df_tmp, col + "_daily_removed", freq="yearly")
 
     rows = []
     for col in df_cf_ow.columns:
@@ -345,10 +243,6 @@ if __name__ == "__main__":
     summary = pd.DataFrame(rows, columns=["Wind Farm", "Daily R²", "Daily F", "Daily p", "Daily Conclusion", "Yearly R²", "Yearly F", "Yearly p", "Yearly Conclusion"])
     print(f"\nSeasonality Test Summary for Offshore Wind Capacity Factors:")
     print(summary)
-
-    if FIGS:
-        for col in df_cf_ow.columns:
-            plot_seasonal_patterns(col, patterns_daily, patterns_yearly, mean_values_daily, mean_values_yearly)
 
     # CONCLUSION: Both daily and yearly seasonalities are significant for all farms
 
@@ -381,8 +275,8 @@ if __name__ == "__main__":
 
     for col in df_cf_ow_noseason.columns:
         if col.endswith("_deseason"):
-            _, f_tests_daily[col], models_daily[col] = test_daily_seasonality(df_cf_ow_noseason, col)
-            _, f_tests_yearly[col], models_yearly[col] = test_yearly_seasonality(df_cf_ow_noseason, col)
+            _, f_tests_daily[col], models_daily[col] = test_seasonality(df_cf_ow_noseason, col, freq="daily")
+            _, f_tests_yearly[col], models_yearly[col] = test_seasonality(df_cf_ow_noseason, col, freq="yearly")
 
     rows = []
     for col in df_cf_ow_noseason.columns:

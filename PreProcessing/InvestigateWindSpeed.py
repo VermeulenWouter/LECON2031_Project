@@ -13,8 +13,9 @@ import os.path as path
 import pandas as pd
 from scipy.stats import t
 
-from InvestigateWindDirection import load_timeseries_data, plot_wind, plot_wind_with_zooms
-from Helper import *
+from Helper import load_timeseries_data
+from Helper.Plots import plot_series, plot_series_with_zooms
+
 
 def correlation_matrix(df, stations):
     C = pd.DataFrame(index=stations, columns=stations, dtype=float)
@@ -165,12 +166,12 @@ def plot_windrose_with_speed(df, filepath: str | None = None, area_proportional:
         plt.show()
 
 
-def plot_daily_profile(df, include_ci=True, ci_level=0.95, filepath=None):
+def plot_daily_profile(df, column: str, include_ci=True, ci_level=0.95, filepath=None, ylabel: str | None = None, title: str | None = None):
     fig, ax = plt.subplots(figsize=(12, 4))
 
     df = df.copy()
-    df["hour"] = df["DateTime (UTC)"].dt.hour
-    grouped = df.groupby("hour")["AverageWindSpeed"]
+    df["hour"] = df.index.hour
+    grouped = df.groupby("hour")[column]
     mean = grouped.mean()
 
     # Confidence intervals
@@ -188,11 +189,11 @@ def plot_daily_profile(df, include_ci=True, ci_level=0.95, filepath=None):
     ax.plot(mean.index, mean.values, color="C0", label="Raw hourly mean")
 
     ax.set_xlabel("Hour of Day")
-    ax.set_ylabel("Wind Speed [m/s]")
+    ax.set_ylabel(ylabel)
     ax.set_xticks(range(24))
     ax.grid(True)
     ax.legend()
-    ax.set_title("Typical Daily Wind Speed Profile")
+    ax.set_title(title)
 
     if filepath:
         plt.savefig(filepath, dpi=300)
@@ -200,15 +201,17 @@ def plot_daily_profile(df, include_ci=True, ci_level=0.95, filepath=None):
     else:
         plt.show()
 
+    return mean.values
 
-def plot_yearly_profile(df, include_raw=True, include_ci=True, ci_level=0.95, filepath=None):
+
+def plot_yearly_profile(df, column: str, include_raw=True, include_ci=True, ci_level=0.95, filepath=None, ylabel: str | None = None, title: str | None = None, ylim: tuple[float, float] | None = None):
     fig, ax = plt.subplots(figsize=(14, 4))
 
     df = df.copy()
-    df["date"] = df["DateTime (UTC)"].dt.date
-    df["doy"] = df["DateTime (UTC)"].dt.dayofyear
-    daily = df.groupby(["date", "doy"])["AverageWindSpeed"].mean().reset_index()
-    grouped = daily.groupby("doy")["AverageWindSpeed"]
+    df["date"] = df.index.date
+    df["doy"] = df.index.dayofyear
+    daily = df.groupby(["date", "doy"])[column].mean().reset_index()
+    grouped = daily.groupby("doy")[column]
     mean = grouped.mean()
 
     # Confidence intervals
@@ -230,11 +233,13 @@ def plot_yearly_profile(df, include_raw=True, include_ci=True, ci_level=0.95, fi
     ax.plot(smooth.index, smooth.values, color="C2", linewidth=2.0, label="30‑day smoothed")
 
     ax.set_xlabel("Day of Year")
-    ax.set_ylabel("Wind Speed [m/s]")
+    ax.set_ylabel(ylabel)
     ax.set_xlim(1, 366)
+    if ylim is not None:
+        ax.set_ylim(ylim)
     ax.grid(True)
     ax.legend()
-    ax.set_title("Typical Yearly Wind Speed Profile")
+    ax.set_title(title)
 
     if filepath:
         plt.savefig(filepath, dpi=300)
@@ -256,15 +261,16 @@ if __name__ == "__main__":
     # %%
     windspeed_df = load_timeseries_data(WINDSPEEDS_DATA_PATH)
     windspeed_df = windspeed_df.drop(columns=["Europoint"])  # Afer analysis, geographically redundant with Borssele Alpha and further away
-    stations = [col for col in windspeed_df.columns if col != 'DateTime (UTC)']
+    windspeed_df = windspeed_df.set_index("DateTime (UTC)")
+    stations = windspeed_df.columns
 
     print(f"Loaded wind speed data from {WINDSPEEDS_DATA_PATH}")
     print(f"\tStations: {stations}")
     print(f"\tData sample:\n\t{windspeed_df.head()}")
 
     #%%
-    plot_wind(windspeed_df, stations, path.join(VISUALISATION_PATH, "WindSpeeds_OverTime.png"), quantity="Wind Speed", unit="m/s")
-    plot_wind_with_zooms(windspeed_df, stations, path.join(VISUALISATION_PATH, "WindSpeeds_OverTime_Zoomed.png"), quantity="Wind Speed", unit="m/s", ymax=30)
+    plot_series(windspeed_df, stations, path.join(VISUALISATION_PATH, "WindSpeeds_OverTime.png"), quantity="Wind Speed", unit="m/s")
+    plot_series_with_zooms(windspeed_df, stations, path.join(VISUALISATION_PATH, "WindSpeeds_OverTime_Zoomed.png"), quantity="Wind Speed", unit="m/s", ymax=30)
 
     # CONCLUSION: Seems to show all stations give very similar wind speeds in time
 
@@ -275,16 +281,14 @@ if __name__ == "__main__":
     print(f"\tMean off-diagonal Pearson correlation coefficient: {np.nanmean(C_off_diag):.4f}")
     print(f"\tMin off-diagonal Pearson correlation coefficient: {np.nanmin(C_off_diag):.4f}")
 
-    windspeed_df_notime = windspeed_df.copy()
-    windspeed_df_notime = windspeed_df_notime.drop(columns=['DateTime (UTC)'])
-    deviation_stats = station_deviation_stats(windspeed_df_notime)
+    deviation_stats = station_deviation_stats(windspeed_df)
     print("\nStation deviation statistics:")
     print(deviation_stats)
 
     # CONCLUSION: Justifies using an average wind speed over all stations as a representative wind speed time series.
 
     #%%
-    windspeed_avg = windspeed_df_notime.mean(axis=1)
+    windspeed_avg = windspeed_df.mean(axis=1)
     windspeed_df = windspeed_df.assign(AverageWindSpeed=windspeed_avg)
 
     print("\nSample of representative wind speed time series (averaged over stations):")
@@ -292,7 +296,7 @@ if __name__ == "__main__":
     print(f"\n\tTotal samples: {len(windspeed_df)}")
     print(f"\tValid samples (not NaN): {windspeed_df['AverageWindSpeed'].notna().sum()}")
 
-    windspeed_df[["DateTime (UTC)", "AverageWindSpeed"]].to_csv(path.join(_FILE_PATH, "Data", "Weather", "WindSpeedsAvg.csv"), index=False, sep=";")
+    windspeed_df["AverageWindSpeed"].to_csv(path.join(_FILE_PATH, "Data", "Weather", "WindSpeedsAvg.csv"), index=True, sep=";")
 
     #%%
     plot_windspeed_histogram(windspeed_df, path.join(VISUALISATION_PATH, "WindSpeeds_Histogram.png"))
@@ -305,5 +309,5 @@ if __name__ == "__main__":
     plot_windrose_with_speed(windspeed_df, area_proportional=False, filepath=path.join(VISUALISATION_PATH, "WindSpeeds_WindRose_HeightProportional.png"))
 
     #%%
-    plot_daily_profile(windspeed_df, include_ci=True, filepath=path.join(VISUALISATION_PATH, "WindSpeeds_DailyProfile.png"))
-    plot_yearly_profile(windspeed_df, include_raw=True, include_ci=True, filepath=path.join(VISUALISATION_PATH, "WindSpeeds_YearlyProfile.png"))
+    plot_daily_profile(windspeed_df, "AverageWindSpeed", include_ci=True, filepath=path.join(VISUALISATION_PATH, "WindSpeeds_DailyProfile.png"), ylabel="Wind Speed [m/s]", title="Typical Daily Wind Speed Profile")
+    plot_yearly_profile(windspeed_df, "AverageWindSpeed", include_raw=True, include_ci=True, filepath=path.join(VISUALISATION_PATH, "WindSpeeds_YearlyProfile.png"), ylabel="Wind Speed [m/s]", title="Typical Yearly Wind Speed Profile")

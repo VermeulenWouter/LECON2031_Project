@@ -7,6 +7,7 @@ Helper functions for plotting wind data and time series.
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle
 from matplotlib.lines import Line2D
 
@@ -85,6 +86,8 @@ def plot_series_with_zooms(df, cols: list[str], filepath: str | None = None, qua
             rect = Rectangle((tmin, 0), tmax - tmin, ymax, linewidth=5, edgecolor="red", facecolor="none")
             ax_main.add_patch(rect)
 
+        ax_zoom.xaxis.set_minor_locator(mdates.DayLocator())
+        ax_zoom.grid(True, axis='x', which='minor')
         ax_zoom.grid(True)
         if unit is not None:
             ax_zoom.set_ylabel(unit)

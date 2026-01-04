@@ -103,7 +103,7 @@ def remove_given_seasonalities(df, columns, daily_pattern, yearly_pattern):
         out[f"{col}_yearly_season"] = out["month"].map(yearly_pattern[col])
 
         # Remove both seasonal components
-        out[f"{col}_deseason"] = out[col] - out[f"{col}_daily_season"] - out[f"{col}_yearly_season"]
+        out[f"{col}_sadjusted"] = out[col] - out[f"{col}_daily_season"] - out[f"{col}_yearly_season"]
 
     return out
 
@@ -247,40 +247,40 @@ if __name__ == "__main__":
     # CONCLUSION: Both daily and yearly seasonalities are significant for all farms
 
     #%%
-    df_cf_ow_noseason = remove_given_seasonalities(df_cf_ow, df_cf_ow.columns, patterns_daily, patterns_yearly)
+    df_cf_ow_sadjusted = remove_given_seasonalities(df_cf_ow, df_cf_ow.columns, patterns_daily, patterns_yearly)
 
     #%%
     # Visually inspect seasonality and/or trends
     mean_values_daily_noseason = {}
     mean_values_yearly_noseason = {}
-    for col in df_cf_ow_noseason.columns:
-        if col.endswith("_deseason"):
-            mean_values_daily_noseason[col] = plot_daily_profile(df_cf_ow_noseason, col, filepath=path.join(VISUALISATION_PATH, f"DailyProfileNoSeason_Offshore_{col.replace(' ', '_')}.png"), title=f"Daily Profile Offshore Wind Capacity Factor - {col}", ylabel="Capacity Factor")
-            mean_values_yearly_noseason[col] = plot_yearly_profile(df_cf_ow_noseason, col, filepath=path.join(VISUALISATION_PATH, f"YearlyProfileNoSeason_Offshore_{col.replace(' ', '_')}.png"), title=f"Yearly Profile Offshore Wind Capacity Factor - {col}", ylabel="Capacity Factor")
+    for col in df_cf_ow_sadjusted.columns:
+        if col.endswith("_sadjusted"):
+            mean_values_daily_noseason[col] = plot_daily_profile(df_cf_ow_sadjusted, col, filepath=path.join(VISUALISATION_PATH, f"DailyProfileNoSeason_Offshore_{col.replace(' ', '_')}.png"), title=f"Daily Profile Offshore Wind Capacity Factor - {col}", ylabel="Capacity Factor")
+            mean_values_yearly_noseason[col] = plot_yearly_profile(df_cf_ow_sadjusted, col, filepath=path.join(VISUALISATION_PATH, f"YearlyProfileNoSeason_Offshore_{col.replace(' ', '_')}.png"), title=f"Yearly Profile Offshore Wind Capacity Factor - {col}", ylabel="Capacity Factor")
 
     plot_series(pd.DataFrame(mean_values_daily_noseason), list(mean_values_daily_noseason.keys()), filepath=path.join(VISUALISATION_PATH, f"DailyProfileNoSeason_Offshore_Wind_CapacityFactors_AllFarms.png"), quantity="Daily Profile Offshore Wind Capacity Factor", unit="Capacity Factor")
     plot_series(pd.DataFrame(mean_values_yearly_noseason), list(mean_values_yearly_noseason.keys()), filepath=path.join(VISUALISATION_PATH, f"YearlyProfileNoSeason_Offshore_Wind_CapacityFactors_AllFarms.png"), quantity="Yearly Profile Offshore Wind Capacity Factor", unit="Capacity Factor")
 
-    for col in df_cf_ow_noseason.columns:
-        if col.endswith("_deseason"):
+    for col in df_cf_ow_sadjusted.columns:
+        if col.endswith("_sadjusted"):
             # Yearly
             yearly_lags = 365*24*4 if "Norther" not in col else 365*24*1.3  # Norther has less data
-            plot_acf(df_cf_ow_noseason, col, lags=yearly_lags, gridline_interval_lags=365*24, filepath=path.join(VISUALISATION_PATH, f"NoSeason_ACF_Offshore_Wind_CapacityFactor_Yearly_{col.replace(' ', '_')}.png"))
+            plot_acf(df_cf_ow_sadjusted, col, lags=yearly_lags, gridline_interval_lags=365 * 24, filepath=path.join(VISUALISATION_PATH, f"NoSeason_ACF_Offshore_Wind_CapacityFactor_Yearly_{col.replace(' ', '_')}.png"))
             # CONCLUSION: the sine-like yearly seasonality is gone
 
             # Daily
-            plot_acf(df_cf_ow_noseason, col, lags=24*10, gridline_interval_lags=24, filepath=path.join(VISUALISATION_PATH, f"NoSeason_ACF_Offshore_Wind_CapacityFactor_Daily_{col.replace(' ', '_')}.png"))
+            plot_acf(df_cf_ow_sadjusted, col, lags=24 * 10, gridline_interval_lags=24, filepath=path.join(VISUALISATION_PATH, f"NoSeason_ACF_Offshore_Wind_CapacityFactor_Daily_{col.replace(' ', '_')}.png"))
             # CONCLUSION: the daily seasonality is more or less gone
 
 
-    for col in df_cf_ow_noseason.columns:
-        if col.endswith("_deseason"):
-            _, f_tests_daily[col], models_daily[col] = test_seasonality(df_cf_ow_noseason, col, freq="daily")
-            _, f_tests_yearly[col], models_yearly[col] = test_seasonality(df_cf_ow_noseason, col, freq="yearly")
+    for col in df_cf_ow_sadjusted.columns:
+        if col.endswith("_sadjusted"):
+            _, f_tests_daily[col], models_daily[col] = test_seasonality(df_cf_ow_sadjusted, col, freq="daily")
+            _, f_tests_yearly[col], models_yearly[col] = test_seasonality(df_cf_ow_sadjusted, col, freq="yearly")
 
     rows = []
-    for col in df_cf_ow_noseason.columns:
-        if col.endswith("_deseason"):
+    for col in df_cf_ow_sadjusted.columns:
+        if col.endswith("_sadjusted"):
             # Daily
             md = models_daily[col]
             fd = f_tests_daily[col]
@@ -305,4 +305,5 @@ if __name__ == "__main__":
 
     #%%
     # Save cleaned data
-    df_cf_ow_noseason.to_csv(path.join(_FILE_PATH, "Data", "Electricity", "BE_OffshoreWind_CapacityFactors_Deseasonalized.csv"), sep=";", index_label="DateTime (UTC)")
+    df_cf_ow_sadjusted = df_cf_ow_sadjusted.drop(columns=["hour", "month"])
+    df_cf_ow_sadjusted.to_csv(path.join(_FILE_PATH, "Data", "Electricity", "BE_OffshoreWind_CapacityFactors_SeasonAdjusted.csv"), sep=";", index_label="DateTime (UTC)")

@@ -4,11 +4,26 @@ import pandas as pd
 
 # Debug settings
 pd.set_option('display.max_columns', None)
+pd.set_option('display.expand_frame_repr', False)
+
+
+def correlation_matrix(df, columns):
+    """Compute the correlation matrix for the given columns in the DataFrame."""
+    C = pd.DataFrame(index=columns, columns=columns, dtype=float)
+    for i, column_i in enumerate(columns):
+        for j, column_j in enumerate(columns):
+            if i <= j:
+                corr_ij = df[column_i].corr(df[column_j])
+                C.at[column_i, column_j] = corr_ij
+                C.at[column_j, column_i] = corr_ij
+    return C
 
 
 def load_timeseries_data(path: str) -> pd.DataFrame:
+    """Load time series data from a CSV file, filtering by date range."""
     df = pd.read_csv(path, sep=";", parse_dates=['DateTime (UTC)'])
     df = df[df["DateTime (UTC)"] > pd.Timestamp("2014-12-31 23:59:59")]
+    df = df[df["DateTime (UTC)"] < pd.Timestamp("2025-11-15 23:59:59")]
     return df
 
 

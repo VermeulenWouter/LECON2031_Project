@@ -17,7 +17,7 @@ from shapely.geometry import box, Point
 
 # %%
 
-_FILE_PATH = path.dirname(__name__)
+_FILE_PATH = path.dirname(path.abspath(path.dirname(__file__)))
 FARMS_SHAPEFILE_PATH = path.join(_FILE_PATH, "Data", "Geography", "OffshoreWindZones.shp")
 WEATHER_STATIONS_CSV_PATH = path.join(_FILE_PATH, "Data", "Geography", "WeatherStationCoordinates.csv")
 BOUNDARIES_SHAPEFILE_PATH = path.join(_FILE_PATH, "Data", "Geography", "EEZBoundaries.shp")
@@ -120,7 +120,7 @@ def plot_geography(
     include_grid=True,
     zoom_extent=100,
     zoom_center=(51.6, 2.9),
-    save_path=None
+    filepath: str | None = None
 ):
     """
     Plot the geography of wind farms and weather stations; using Mercator projection. A lot of options allow
@@ -140,7 +140,7 @@ def plot_geography(
     :param include_grid: Whether to include grid lines
     :param zoom_extent: Zoom extent in kilometers, half-width/height from center.
     :param zoom_center: Tuple of (latitude, longitude) in WGS84 for the center of the zoom
-    :param save_path: Optional path to save the plot as a PNG file.
+    :param filepath: Optional path to save the plot as a PNG file.
     """
     # Load all data
     zones = gpd.read_file(FARMS_SHAPEFILE_PATH).to_crs(4326)
@@ -254,12 +254,13 @@ def plot_geography(
 
 
 
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches="tight")
-
-    plt.show()
+    if filepath:
+        plt.savefig(filepath, dpi=300, bbox_inches="tight")
+    else:
+        plt.show()
+    plt.close(fig)
 
 
 if __name__ == "__main__":
     # Test the function
-    plot_geography()
+    plot_geography(filepath=path.join(_FILE_PATH, "Visualisations", "geography_plot_base.png"), zoom_extent=50)

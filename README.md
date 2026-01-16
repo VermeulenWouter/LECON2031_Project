@@ -18,6 +18,7 @@ Clone the repository:
 git clone https://github.com/VermeulenWouter/LECON2031_Project.git
 cd LECON2031_Project
 ```
+OR if you don't have git installed, download the ZIP file from GitHub and extract it.
 
 Install Python 3 (if not already installed): https://www.python.org/downloads/
 
@@ -27,9 +28,13 @@ pip install -r requirements.txt
 ```
 
 ### Running the code
-To follow the project timeline, run the scripts (in the given order!):
+To follow the project timeline, run the following scripts (in the given order!):
 ```bash
-python PreProcessing/ProcessProductionRawData.py  # Process raw ENTSO-E data (datafiles not included because too large (multiple gigabytes)) 
+python PreProcessing/ProcessRawProductionData.py  # Process raw ENTSO-E data (datafiles not included because too large (multiple gigabytes)) 
+```
+
+```bash
+python PreProcessing/InvestigateProductionData.py  # Investigate processed production data, check seasonality
 ```
 
 ```bash
@@ -46,11 +51,18 @@ python PreProcessing/InvestigateWindSpeed.py  # Investigate wind speed data and 
 # Note this script outputs in the console, but also creates a file `Data/Weather/WindSpeedsAvg.csv` with the final average wind speed data, and some plots in `Visualisations/WindPreprocessing/`
 ```
 
-#TODO
+```bash
+python Analysis/ModelNoWindDirection.py  # Build and evaluate VAR model without wind direction considerations
+```
+
+```bash
+python Analysis/ModelWithWindDirection.py  # Use ARX / VAR model on data split by wind direction bins and evaluate structural changes
+```
+
 
 ## Key packages used
 
-* `statsmodels` : VAR, unit root tests, BIC, AIC, Granger causality tests, ...
+* `statsmodels` : VAR, unit root tests, BIC, AIC, ...
     * `statsmodels.tsa` : time series analysis
     * Documentation: https://www.statsmodels.org/stable/tsa.html
 * `pandas` : data manipulation and analysis
@@ -59,8 +71,6 @@ python PreProcessing/InvestigateWindSpeed.py  # Investigate wind speed data and 
     * Documentation: https://numpy.org/doc/
 * `matplotlib` : data visualization
     * Documentation: https://matplotlib.org/stable/contents.html
-
-#TODO
 
 
 ## Data sources
@@ -74,13 +84,16 @@ The main code files are located in the root directory of the project. The follow
 
 *For more details on the different folders and the files they contain, see the respective README files in those folders.*
 
-| Name                                        | Description                                                                                                                                                                                                                                                                                                                         |
-|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DataRaw/`                                  | Folder containing the raw data files used in the project. The pre-processed and filtered data files are stored in the `Data/` directory.                                                                                                                                                                                            |
-| `Data/`                                     | Folder containing various data files used in the model and/or analysis, including processed electricity production data and wind data.                                                                                                                                                                                              |
-| `Visualisations/`                           | Folder pre-created to contain visualizations and plots generated during the analysis.                                                                                                                                                                                                                                               |
-| `PreProcessing/ProcessRawData.py`           | Script to preprocess raw data from ENTSO-E Transparency Platform and generate the processed data files in the `Data/` directory.                                                                                                                                                                                                    |
-| `PreProcessing/ProcessRawWindData.py`       | Script to preprocess raw wind data from KNMI and MVB and generate some of the processed wind data files in the `Data/Weather/` directory.                                                                                                                                                                                           |
-| `PreProcessing/InvestigateWindDirection.py` | Script to preprocess the wind direction data (from `Data/Weather/WindDirections.csv`) and giving final data used for the model (stored in `Data/Weather/WindDirectionsAvg.csv`. Checks correlation of different stations, then also looks at properties (main direction, seasonality) of the obtained final average wind direction. |
-| `PreProcessing/InvestigateWindSpeed.py`     | Script to preprocess the wind speed data (from `Data/Weather/WindSpeeds.csv`) and giving final data (stored in `Data/Weather/WindSpeedsAvg.csv`. Checks correlation of different stations, then also looks at seasonality of the obtained final average wind speed.                                                                 |
-| *#TODO*                                     | Actual project code.                                                                                                                                                                                                                                                                                                                |
+| Name                                         | Description                                                                                                                                                                                                                                                                                                                         |
+|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DataRaw/`                                   | Folder containing the raw data files used in the project. The pre-processed and filtered data files are stored in the `Data/` directory.                                                                                                                                                                                            |
+| `Data/`                                      | Folder containing various data files used in the model and/or analysis, including processed electricity production data and wind data.                                                                                                                                                                                              |
+| `Visualisations/`                            | Folder pre-created to contain visualizations and plots generated during the analysis.                                                                                                                                                                                                                                               |
+| `Helper/`                                    | Folder containing helper python files (in order to reduce duplication of code and/or importing between preprocessing/analysis files.                                                                                                                                                                                                |
+| `PreProcessing/ProcessRawProductionData.py`  | Script to preprocess raw data from ENTSO-E Transparency Platform and generate the processed data files in the `Data/` directory.                                                                                                                                                                                                    |
+| `PreProcessing/InvestigateProductionData.py` | Script to check seasonality of the data processed in `PreProcessing/ProcessRawProductionData.py`, and create seasonally adjusted series.                                                                                                                                                                                            |
+| `PreProcessing/ProcessRawWindData.py`        | Script to preprocess raw wind data from KNMI and MVB and generate some of the processed wind data files in the `Data/Weather/` directory.                                                                                                                                                                                           |
+| `PreProcessing/InvestigateWindDirection.py`  | Script to preprocess the wind direction data (from `Data/Weather/WindDirections.csv`) and giving final data used for the model (stored in `Data/Weather/WindDirectionsAvg.csv`. Checks correlation of different stations, then also looks at properties (main direction, seasonality) of the obtained final average wind direction. |
+| `PreProcessing/InvestigateWindSpeed.py`      | Script to preprocess the wind speed data (from `Data/Weather/WindSpeeds.csv`) and giving final data (stored in `Data/Weather/WindSpeedsAvg.csv`. Checks correlation of different stations, then also looks at seasonality of the obtained final average wind speed.                                                                 |
+| `Analysis/ModelNoWindDirection`              | First actual analysis: fitting a VAR to the production data to check performance and feasibility.                                                                                                                                                                                                                                   |
+| `Analysis/ModelWithWindDirection`            | Second (and most interesting) actual analysis: fitting ARX (VAR models predicting only one variable) to check the existence of a structural change in the model following activation of the Borssele Alpha wind farm.                                                                                                               |

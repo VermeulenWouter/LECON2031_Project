@@ -86,10 +86,6 @@ def forecast_model(df, model_type, target_col, cols, lag_order, cutoff_date, hor
 
     :return: the forecasts and error metrics (RMSE and MAE) for each horizon
     """
-    if seasonal_component is not None:
-        if type(seasonal_component) is pd.DataFrame:
-            seasonal_component = seasonal_component[target_col]
-
     train = df.loc[:cutoff_date]
     test = df.loc[cutoff_date:]
 

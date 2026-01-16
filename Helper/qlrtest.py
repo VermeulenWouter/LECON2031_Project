@@ -237,14 +237,20 @@ def make_lagged_df(df, y_col, x_cols, nlags):
     :param nlags: number of lags
     :return: dataframe with y_col and lagged versions of x_cols
     """
-    out = pd.DataFrame()
-    out[y_col] = df[y_col]
+    df_lag = pd.DataFrame()
+    df_lag[y_col] = df[y_col]
 
-    for col in x_cols:
+    # Add lags of y
+    for L in range(1, nlags + 1):
+        df_lag[f"{y_col}_lag{L}"] = df[y_col].shift(L)
+
+    # Add contemporaneous and lagged x's
+    for x in x_cols:
+        df_lag[x] = df[x]  # contemporaneous
         for L in range(1, nlags + 1):
-            out[f"{col}_lag{L}"] = df[col].shift(L)
+            df_lag[f"{x}_lag{L}"] = df[x].shift(L)
 
-    return out.dropna()
+    return df_lag.dropna()
 
 
 def chow_test_VAR(df, y_col, x_cols, break_index, nlags=1):
@@ -258,22 +264,25 @@ def chow_test_VAR(df, y_col, x_cols, break_index, nlags=1):
     :param nlags: number of lags to include in the model
     :return: chow statistic (F-value), model before break, model after break
     """
-    # Build lagged dataset
+
+    # Build lagged dataset (same as fit_model)
     df_lag = make_lagged_df(df, y_col, x_cols, nlags)
 
-    # Extract arrays
-    y = df_lag[y_col].values
-    X = df_lag[[c for c in df_lag.columns if c != y_col]].values
+    # y as Series
+    y = df_lag[y_col]
+
+    # X as DataFrame (keep names!)
+    X = df_lag.drop(columns=[y_col])
     X = sm.add_constant(X)
 
-    # Adjust break index because of dropped lags
+    # Adjust break index for lag loss
     b = break_index - nlags
     if b <= 0 or b >= len(df_lag):
         raise ValueError("Break index invalid after lag adjustment")
 
     # Split samples
-    X1, X2 = X[:b], X[b:]
-    y1, y2 = y[:b], y[b:]
+    X1, X2 = X.iloc[:b], X.iloc[b:]
+    y1, y2 = y.iloc[:b], y.iloc[b:]
 
     # Fit models
     m_full = sm.OLS(y, X).fit()
@@ -292,4 +301,12 @@ def chow_test_VAR(df, y_col, x_cols, break_index, nlags=1):
     # Chow F-statistic
     chow = ((RSS_full - (RSS_1 + RSS_2)) / k) / ((RSS_1 + RSS_2) / (n1 + n2 - 2*k))
 
-    return chow, m1, m2
+    from scipy.stats import f
+
+    alpha = 0.05
+    df1 = k
+    df2 = n1 + n2 - 2 * k
+
+    F_crit = f.ppf(1 - alpha, df1, df2)
+
+    return chow, m1, m2, F_crit

@@ -1,9 +1,12 @@
 
 ## About
 
-### Authors
+### Author
 * Wouter Vermeulen ([wouter.vermeulen@student.uclouvain.be](mailto:wouter.vermeulen@student.uclouvain.be)), NOMA 35342100
 
+
+### License
+This project is private. For any inquiries regarding the use of the code or data, please contact the author. By default, all rights are reserved.
 
 ## Getting started
 

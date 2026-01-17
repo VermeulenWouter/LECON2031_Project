@@ -361,6 +361,7 @@ if __name__ == "__main__":
         plt.ylabel('F-statistic')
         plt.legend()
         plt.grid(True)
+        plt.savefig(path.join(VISUALISATION_PATH, "QLR_Test_FStatistics_Part1a.png"), dpi=300)
         plt.show()
 
     #%%
@@ -392,4 +393,5 @@ if __name__ == "__main__":
         plt.ylabel('F-statistic')
         plt.legend()
         plt.grid(True)
+        plt.savefig(path.join(VISUALISATION_PATH, "QLR_Test_FStatistics_Part1a_Subset.png"), dpi=300)
         plt.show()

@@ -268,7 +268,7 @@ if __name__ == "__main__":
     print("\trelative diff:", np.abs(m1.params - m2.params) / np.abs(m1.params))
 
     F_values = []
-    window = 20  #TODO adjust back to 24*20 or similar
+    window = 100
     for b in range(expected_break_index_fullset-window, expected_break_index_fullset+window):
         F_value, _, _ = qlrtest.chow_test_1D(df_1a["AverageWindSpeed_sadjusted"], break_index=b, nlags=lag_1a)
         F_values.append(F_value)
@@ -333,7 +333,7 @@ if __name__ == "__main__":
         idx = df_1a_grouped_subset.index
         start_ts = pd.Timestamp("2020-04-27 00:00:00")
         stop_ts = pd.Timestamp("2020-12-02 23:00:00")
-        window = 10  # Hours #TODO adjust back to like 300
+        window = 100
 
         existing_before = idx.asof(start_ts)  # First existing timestamp BEFORE or equal to start_ts
         existing_after = idx[idx > stop_ts].min()  # First existing timestamp AFTER stop_ts
@@ -352,16 +352,18 @@ if __name__ == "__main__":
         print("\tparams after:", m2.params)
         print("\tabs diff:", np.abs(m1.params - m2.params))
         print("\trelative diff:", np.abs(m1.params - m2.params) / np.abs(m1.params))
-        # TODO uncomment
-        """
+
         F_values = []
+        F_crits = []
         for b in range(df_1a_grouped_subset.index.get_loc(existing_before)-window, df_1a_grouped_subset.index.get_loc(existing_after)+window):
-            F_value, _, _ = chow_test_VAR(df_1a_grouped_subset, y_col="Belwind_sadjusted", x_cols=[
+            F_value, _, _, F_crit = chow_test_VAR(df_1a_grouped_subset, y_col="Belwind_sadjusted", x_cols=[
                 "Belwind_sadjusted", "Northwind_sadjusted",
                 "Thorntonbank_NE_sadjusted", "Thorntonbank_SW_sadjusted"], break_index=b, nlags=lag_1a)
             F_values.append(F_value)
+            F_crits.append(F_crit)
         plt.figure(figsize=(10, 6))
         plt.plot(range(df_1a_grouped_subset.index.get_loc(existing_before)-window, df_1a_grouped_subset.index.get_loc(existing_after)+window), F_values, marker='.', linestyle='-')
+        plt.plot(range(df_1a_grouped_subset.index.get_loc(existing_before)-window, df_1a_grouped_subset.index.get_loc(existing_after)+window), F_crits, color='orange', linestyle='--', label='F-crit 5%')
         plt.axvline(df_1a_grouped_subset.index.get_loc(existing_after), color="r", linestyle="--", label=f"Expected potential breakpoint: {df_1a_grouped_subset.index.get_loc(existing_after)}")
         plt.title(f"Chow Test F-statistics for Belwind in {direction} Direction Bin")
         plt.xlabel("Breakpoint Index")
@@ -369,7 +371,6 @@ if __name__ == "__main__":
         plt.legend()
         plt.grid()
         plt.savefig(path.join(VISUALISATION_PATH, f"ChowTest_Belwind_{direction}_Direction.png"), dpi=300)
-        """
 
         #%% Wald test for equality of coefficients before/after change
 
@@ -410,20 +411,21 @@ if __name__ == "__main__":
         # BEFORE
         for c in cutoffs_before:
             _, m = forecast_model(df_before, "ARX", y_col, x_cols, lag_1a, c, [1, 2, 3, 6],
-                                  df_before_seasonal["Belwind_season"])
+                                  df_before_seasonal["Belwind_season"], lowerbound=0, upperbound=1)
             rows_before += [{"cutoff": c, "h": h, "RMSE": m[h]["RMSE"], "MAE": m[h]["MAE"]} for h in [1, 2, 3, 6]]
 
         # AFTER
         for c in cutoffs_after:
             _, m = forecast_model(df_after, "ARX", y_col, x_cols, lag_1a, c, [1, 2, 3, 6],
-                                  df_after_seasonal["Belwind_season"])
+                                  df_after_seasonal["Belwind_season"], lowerbound=0, upperbound=1)
             rows_after += [{"cutoff": c, "h": h, "RMSE": m[h]["RMSE"], "MAE": m[h]["MAE"]} for h in [1, 2, 3, 6]]
 
         df_before_metrics = pd.DataFrame(rows_before)
         df_after_metrics = pd.DataFrame(rows_after)
 
+        print(f"Forecasting performance before the break in {direction} direction bin:")
+        print(df_before_metrics)
+        print(f"Forecasting performance after the break in {direction} direction bin:")
+        print(df_after_metrics)
 
         #TODO make a visualisation of some forecasts vs actual?
-
-    #%%
-    #TODO check for the same results if using Thorntonbank_SW as target variable

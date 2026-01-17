@@ -71,7 +71,7 @@ def arx_forecast(results, y_window, X_window, h, p):
     return y_hist[-1]
 
 
-def forecast_model(df, model_type, target_col, cols, lag_order, cutoff_date, horizons, seasonal_component=None):
+def forecast_model(df, model_type, target_col, cols, lag_order, cutoff_date, horizons, seasonal_component=None, lowerbound=None, upperbound=None):
     """
     Forecasting function to get error estimates for VAR, AR, and ARX models.
 
@@ -83,6 +83,8 @@ def forecast_model(df, model_type, target_col, cols, lag_order, cutoff_date, hor
     :param cutoff_date: the date to split train and test data (call this function multiple times to do rolling forecasts)
     :param horizons: the forecast horizons to evaluate (in number of time steps)
     :param seasonal_component: if provided, this seasonal component will be added back to forecasts and true values before error calculation
+    :param lowerbound: optional lower bound for forecasts (applied after seasonal adjustment)
+    :param upperbound: optional upper bound for forecasts (applied after seasonal adjustment)
 
     :return: the forecasts and error metrics (RMSE and MAE) for each horizon
     """
@@ -130,6 +132,14 @@ def forecast_model(df, model_type, target_col, cols, lag_order, cutoff_date, hor
     if seasonal_component is not None:
         for h in horizons:
             forecasts[h] = forecasts[h] + seasonal_component.loc[index]
+
+    # Apply bounds if provided
+    if lowerbound is not None:
+        for h in horizons:
+            forecasts[h] = forecasts[h].clip(lower=lowerbound)
+    if upperbound is not None:
+        for h in horizons:
+            forecasts[h] = forecasts[h].clip(upper=upperbound)
 
     metrics = {}
     for h in horizons:

@@ -142,7 +142,7 @@ def plot_windrose_with_speed(df, filepath: str | None = None, area_proportional:
 
     theta = dir_edges[:-1] + widths / 2
     for i in range(n_spd):
-        ax.bar( theta, radii_top[:, i] - radii_bottom[:, i], width=widths, bottom=radii_bottom[:, i], align="center", color=speed_colors[i], edgecolor="white", linewidth=0.8, label=speed_labels[i] if i == 0 else None)
+        ax.bar( theta, radii_top[:, i] - radii_bottom[:, i], width=widths, bottom=radii_bottom[:, i], align="center", color=speed_colors[i], edgecolor="white", linewidth=0.8, label=speed_labels[i])
     tick_r = np.linspace(0, max_r, 5)
     if area_proportional:
         tick_percent = (tick_r**2) * 100
@@ -165,8 +165,7 @@ def plot_windrose_with_speed(df, filepath: str | None = None, area_proportional:
         title += " (Radius-Proportional)"
     ax.set_title(title)
 
-    ax.legend(loc="lower left", bbox_to_anchor=(1.05, 0.5))
-
+    ax.legend()
     if filepath:
         plt.savefig(filepath, dpi=300)
         print(f"Saved wind rose to {filepath}")

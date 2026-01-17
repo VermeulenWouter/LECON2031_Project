@@ -113,6 +113,7 @@ def plot_geography(
     include_other_wind_farm_zones=True,
     show_other_wind_farm_zone_labels=False,
     include_other_wind_farm_zones_under_construction=False,
+    include_elisabeth_zones=False,
     include_weather_stations=True,
     show_weather_station_names=False,
     include_basemap=True,
@@ -166,7 +167,10 @@ def plot_geography(
     zones["status"] = zones["name"].map(lambda x: zone_styles.get(x, {}).get("Status"))
     zones["homeland"] = zones["name"].map(is_center)
 
-    center = zones[(zones["homeland"] == True) & (zones["status"] == "Production") & zones["display"].notna()]
+    if include_elisabeth_zones:
+        center = zones[((zones["homeland"] == True) & (zones["status"] == "Production") & zones["display"].notna()) | (zones["name"].str.contains("Princess Elisabeth"))]
+    else:
+        center = zones[(zones["homeland"] == True) & (zones["status"] == "Production") & zones["display"].notna()]
     other = zones[(zones["homeland"] == False) & zones["display"].notna()]
 
     if not include_other_wind_farm_zones_under_construction:
@@ -183,14 +187,17 @@ def plot_geography(
         if show_center_wind_farm_zone_labels:
             for _, r in center.iterrows():
                 p = r.geometry.representative_point()
-                ax.text(p.x, p.y, r["display"], fontsize=8, ha="center", va="center")
+                ax.text(p.x, p.y, r["display"], fontsize=int(8/40*zoom_extent), ha="center", va="center")
 
     if include_other_wind_farm_zones:
         other.plot(ax=ax, color=other["color"], edgecolor="black", linewidth=0.8, alpha=0.8, zorder=2)
         if show_other_wind_farm_zone_labels:
             for _, r in other.iterrows():
                 p = r.geometry.representative_point()
-                ax.text(p.x, p.y, r["display"], fontsize=8, ha="center", va="center")
+                if "Borssele" in r["display"]:
+                    ax.text(p.x, p.y, r["display"], fontsize=int(8/40*zoom_extent), ha="left", va="center")
+                else:
+                    ax.text(p.x, p.y, r["display"], fontsize=int(8/40*zoom_extent), ha="right", va="center")
 
     if include_weather_stations:
         stations.plot(ax=ax, color="red", markersize=50, zorder=4)
@@ -198,7 +205,7 @@ def plot_geography(
     if include_weather_stations and show_weather_station_names:
         for _, r in stations.iterrows():
             p = r.geometry
-            ax.text(p.x, p.y, r["Station"], fontsize=8, ha="left", va="bottom")
+            ax.text(p.x, p.y, r["Station"], fontsize=int(8/40*zoom_extent), ha="left", va="bottom")
 
 
     if include_seaborders:
@@ -263,4 +270,5 @@ def plot_geography(
 
 if __name__ == "__main__":
     # Test the function
-    plot_geography(filepath=path.join(_FILE_PATH, "Visualisations", "geography_plot_base.png"), zoom_extent=50)
+    plot_geography(filepath=path.join(_FILE_PATH, "Visualisations", "geography_plot_Belgium.png"), zoom_extent=75, include_weather_stations=False, show_center_wind_farm_zone_labels=False, include_other_wind_farm_zones_under_construction=True, include_elisabeth_zones=True)
+    plot_geography(filepath=path.join(_FILE_PATH, "Visualisations", "geography_plot_base.png"), zoom_extent=40, include_weather_stations=False, show_center_wind_farm_zone_labels=False)
